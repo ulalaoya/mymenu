@@ -168,22 +168,34 @@ export function HomeScreen() {
     if (id) navigate(`/meal/${id}`);
   }
 
-  const greeting = `${greetingForHour(hour)}, ${profile?.username ?? ''}! ${greetingEmoji(hour)}`;
+  // צבע הפרופיל שנבחר בהגדרות — צובע את עמוד הבית (כותרת, אווטאר, אייקונים)
+  const accent = profile?.color ?? 'var(--blue)';
 
   return (
     <div className={styles.wrap}>
       <header className={styles.header}>
-        <h1 className={styles.logo}>
-          MyMenu <Sparkle size={26} />
+        <h1 className={styles.logo} style={{ color: accent }}>
+          MyMenu <Sparkle size={26} color={accent} />
         </h1>
-        <p className={styles.greeting}>{greeting}</p>
+        <p className={styles.greeting}>
+          {greetingForHour(hour)}, {profile?.username}
+          {profile && (
+            <span
+              className={styles.avatarChip}
+              style={{ background: profile.color }}
+            >
+              {profile.avatar}
+            </span>
+          )}
+          {greetingEmoji(hour)}
+        </p>
         <p className={styles.dateText}>{prettyToday()}</p>
       </header>
 
       {/* ===== יומן הארוחות של היום ===== */}
       <section className="card">
         <div className={styles.cardTitle}>
-          <Clock size={22} />
+          <Clock size={22} color={accent} />
           <h2>היומן של היום</h2>
           <button
             type="button"

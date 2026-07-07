@@ -20,8 +20,24 @@
 }
 
 .greeting {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
   color: var(--text-soft);
   font-size: 17px;
+}
+
+/* אווטאר הפרופיל אחרי השם — צבוע בצבע שנבחר בהגדרות */
+.avatarChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  font-size: 17px;
+  box-shadow: var(--shadow-card);
 }
 
 .cardTitle {
@@ -73,19 +89,21 @@
   transition: transform 0.12s ease, background 0.12s ease;
 }
 
-/* שדה שעה נערך ישירות ביומן (override פר-יום) */
+/* שדה שעה נערך ישירות ביומן (override פר-יום).
+   רוחב מספיק + הצמדה לימין כדי שכל הספרות ייראו ושחץ הבורר לא יסתיר אותן. */
 .timeEdit {
-  width: 66px;
+  width: 96px;
   min-height: 40px;
   flex-shrink: 0;
-  padding: 0 4px;
+  padding: 0 8px;
   border-radius: var(--radius-sm);
   border: 2px solid var(--border-soft);
   background: var(--card);
   color: var(--text-soft);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: var(--fw-medium);
-  text-align: center;
+  text-align: right;
+  direction: ltr;
 }
 
 .timeEdit:focus {

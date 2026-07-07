@@ -211,7 +211,7 @@ export function HistoryScreen() {
       <section className="card">
         <div className={styles.sectionTitle}>
           <Sparkle size={22} />
-          <h2>הקירות שלי</h2>
+          <h2>ההצלחות שלי</h2>
         </div>
 
         {/* רצף ימים */}
