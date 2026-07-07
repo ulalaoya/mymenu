@@ -1,0 +1,264 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-bottom: var(--space-6);
+}
+
+.header {
+  padding-top: var(--space-3);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 26px;
+  color: var(--blue);
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 20px;
+  font-weight: var(--fw-bold);
+  color: var(--text);
+  margin-bottom: var(--space-3);
+}
+
+.hint {
+  font-size: 14px;
+  color: var(--text-soft);
+  line-height: 1.5;
+  margin-bottom: var(--space-4);
+}
+
+/* ===== שדות ===== */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.label {
+  font-size: 14px;
+  font-weight: var(--fw-medium);
+  color: var(--text);
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+  border: 2px solid var(--border-soft);
+  color: var(--text);
+  transition: border-color 0.15s ease;
+}
+
+.input:focus {
+  border-color: var(--blue);
+  outline: none;
+}
+
+/* ===== אווטאר ===== */
+.avatarGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.avatarBtn {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+  border: 2px solid var(--border-soft);
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+}
+
+.avatarActive {
+  border-color: var(--coral);
+  background: var(--coral-light);
+  transform: scale(1.05);
+}
+
+/* ===== צבע ===== */
+.colorRow {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.colorBtn {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border-radius: var(--radius-pill);
+  border: 3px solid transparent;
+  transition: transform 0.12s ease;
+}
+
+.colorActive {
+  border-color: var(--text);
+  transform: scale(1.08);
+}
+
+/* ===== שעות ===== */
+.timesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.timeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  min-height: var(--touch-min);
+}
+
+.timeLabel {
+  font-weight: var(--fw-medium);
+  color: var(--text);
+}
+
+.timeInput {
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  border: 2px solid var(--border-soft);
+  color: var(--text);
+}
+
+/* ===== אלרגיות ===== */
+.allergyInputRow {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: var(--coral);
+  transition: transform 0.12s ease;
+}
+
+.addBtn:active {
+  transform: scale(0.92);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.allergyChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--coral-light);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: var(--fw-medium);
+  min-height: 40px;
+}
+
+.chipX {
+  font-size: 12px;
+  color: var(--coral);
+}
+
+/* ===== מתג צמחונות ===== */
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-soft);
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--fw-medium);
+  color: var(--text);
+}
+
+.switch {
+  position: relative;
+  width: 56px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  background: var(--border-soft);
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.switchOn {
+  background: var(--success);
+}
+
+.knob {
+  position: absolute;
+  top: 3px;
+  /* RTL: כבוי בצד ימין */
+  right: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+/* RTL: הזזה שמאלה כשדולק */
+.switchOn .knob {
+  transform: translateX(-24px);
+}
+
+/* ===== הודעות ===== */
+.savedMsg {
+  text-align: center;
+  color: var(--success);
+  font-weight: var(--fw-medium);
+}
+
+.error {
+  text-align: center;
+  color: var(--coral);
+  font-weight: var(--fw-medium);
+}
+
+/* ===== כפתורים ===== */
+.saveBtn {
+  width: 100%;
+}
+
+.switchBtn {
+  width: 100%;
+}

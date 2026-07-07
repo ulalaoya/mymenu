@@ -1,0 +1,42 @@
+:root {
+  /* ===== צבעים (SPEC סעיף 9) ===== */
+  --blue: #5b9bd5; /* כחול ידידותי — קווי מתאר, טקסט ראשי */
+  --blue-light: #dcebfa; /* רקעי כרטיסים כחלחלים */
+  --coral: #f0806c; /* אלמוגי — הדגשות, לבבות, CTA משני */
+  --coral-light: #fbddd6;
+  --yellow: #f5b041; /* צהוב-שמש — כוכבים, נצנוצים */
+  --bg: #fafbfc; /* רקע כללי לבן-שבור */
+  --card: #ffffff;
+  --text: #3d5a80; /* כחול כהה לטקסט */
+  --success: #7dcea0;
+
+  /* גוונים נגזרים לשימוש כללי */
+  --text-soft: #6b83a3;
+  --border-soft: #eef2f7;
+
+  /* ===== רדיוסים ===== */
+  --radius-card: 24px;
+  --radius-pill: 999px;
+  --radius-sm: 12px;
+
+  /* ===== מרווחים ===== */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* ===== צללים עדינים מאוד ===== */
+  --shadow-card: 0 4px 20px rgba(91, 155, 213, 0.08);
+  --shadow-float: 0 6px 24px rgba(91, 155, 213, 0.22);
+
+  /* ===== טיפוגרפיה ===== */
+  --font: 'Rubik', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-bold: 700;
+
+  /* ===== מידות מגע ===== */
+  --touch-min: 44px;
+}

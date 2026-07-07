@@ -1,0 +1,38 @@
+.wrap {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 60;
+}
+
+.piece {
+  position: absolute;
+  top: -16px;
+  border-radius: 2px;
+  opacity: 0;
+  animation-name: fall;
+  animation-timing-function: cubic-bezier(0.3, 0.7, 0.5, 1);
+  animation-fill-mode: forwards;
+}
+
+@keyframes fall {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) rotate(0deg);
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(105vh) rotate(540deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .piece {
+    animation-duration: 0.01ms !important;
+    display: none;
+  }
+}

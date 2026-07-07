@@ -1,0 +1,184 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.title {
+  color: var(--blue);
+}
+
+.shuffleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--coral);
+  color: #fff;
+  font-weight: var(--fw-medium);
+  transition: transform 0.12s ease;
+}
+
+.shuffleBtn:active {
+  transform: scale(0.96);
+}
+
+.shuffleBtn:disabled {
+  opacity: 0.6;
+}
+
+.slotHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.slotTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.slotIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  background: var(--blue-light);
+}
+
+.slotTime {
+  color: var(--text-soft);
+  font-size: 14px;
+  font-weight: var(--fw-medium);
+}
+
+.empty {
+  color: var(--text-soft);
+  font-size: 15px;
+}
+
+.foodRow,
+.sweetPick {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  margin-top: var(--space-2);
+  text-align: right;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.foodRow:active,
+.sweetPick:active {
+  transform: scale(0.99);
+  background: var(--blue-light);
+}
+
+.foodEmoji {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.foodName {
+  font-weight: var(--fw-medium);
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.foodGroups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1;
+  justify-content: flex-start;
+}
+
+.groupTag {
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  color: #fff;
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+}
+
+.swapHint {
+  color: var(--coral);
+  font-size: 13px;
+  font-weight: var(--fw-medium);
+  margin-inline-start: auto;
+  flex-shrink: 0;
+}
+
+/* ===== מגירה ===== */
+.sheetLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--fw-medium);
+  color: var(--text);
+  margin-top: var(--space-2);
+}
+
+.sheetFood {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  text-align: right;
+  transition: background 0.12s ease;
+}
+
+.sheetFood:active {
+  background: var(--blue-light);
+}
+
+.searchInput {
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--border-soft);
+  background: var(--card);
+  color: var(--text);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+.addFree {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--coral-light);
+  color: var(--coral);
+  font-weight: var(--fw-medium);
+}

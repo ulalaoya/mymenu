@@ -1,0 +1,256 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 30px;
+  color: var(--blue);
+}
+
+.greeting {
+  color: var(--text-soft);
+  font-size: 17px;
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+/* ===== ציר זמן הארוחות ===== */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mealRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  min-height: var(--touch-min);
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.mealRow:active {
+  transform: scale(0.99);
+}
+
+.mealTime {
+  min-width: 44px;
+  font-weight: var(--fw-medium);
+  font-size: 14px;
+  color: var(--text-soft);
+  text-align: center;
+}
+
+.mealIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  background: var(--blue-light);
+  flex-shrink: 0;
+}
+
+.mealBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.mealName {
+  font-weight: var(--fw-medium);
+  color: var(--text);
+}
+
+.mealFoods {
+  font-size: 14px;
+  color: var(--text-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mealStatus {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.dueBadge {
+  background: var(--yellow);
+  color: #fff;
+  font-size: 13px;
+  font-weight: var(--fw-medium);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.skippedBadge {
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.status_eaten {
+  background: #eef9f2;
+}
+
+.status_due {
+  background: #fff6e9;
+}
+
+/* ===== מד מים ===== */
+.waterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+.cup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border-radius: var(--radius-pill);
+  background: var(--blue-light);
+  border: 2px solid transparent;
+  transition: transform 0.15s ease, background 0.25s ease;
+}
+
+.cup:active {
+  transform: scale(0.9);
+}
+
+.cupFilled {
+  background: var(--blue);
+  animation: pop 0.25s ease;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.8);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.waterHint {
+  margin-top: var(--space-3);
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 15px;
+}
+
+/* ===== טיפ יומי ===== */
+.tipCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-card);
+  background: linear-gradient(135deg, #f5b041, #f0806c);
+  box-shadow: var(--shadow-card);
+  color: #fff;
+}
+
+.tipIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.22);
+  flex-shrink: 0;
+}
+
+.tipLabel {
+  font-size: 13px;
+  font-weight: var(--fw-medium);
+  opacity: 0.9;
+}
+
+.tipText {
+  font-weight: var(--fw-medium);
+  line-height: 1.4;
+}
+
+/* ===== צ'קליסט קבוצות מזון ===== */
+.groupsIntro {
+  color: var(--text-soft);
+  font-size: 15px;
+  margin-bottom: var(--space-3);
+}
+
+.groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.groupTag {
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--border-soft);
+  background: var(--card);
+  color: var(--text-soft);
+  font-size: 14px;
+  font-weight: var(--fw-medium);
+  transition: all 0.3s ease;
+}
+
+.groupOn {
+  color: #fff;
+  transform: scale(1.02);
+}
+
+/* ===== כפתור צף ===== */
+.fab {
+  position: fixed;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 52px;
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-pill);
+  background: var(--coral);
+  color: #fff;
+  font-weight: var(--fw-medium);
+  font-size: 16px;
+  box-shadow: var(--shadow-float);
+  z-index: 20;
+  transition: transform 0.12s ease;
+}
+
+.fab:active {
+  transform: translateX(-50%) scale(0.96);
+}

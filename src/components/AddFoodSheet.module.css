@@ -1,0 +1,136 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-weight: var(--fw-bold);
+  color: var(--text);
+  font-size: 16px;
+}
+
+.hint {
+  color: var(--text-soft);
+  font-size: 13px;
+  margin-top: -4px;
+}
+
+.inferred {
+  color: var(--blue);
+  font-size: 14px;
+  font-weight: var(--fw-medium);
+  margin-top: -4px;
+}
+
+.input {
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--border-soft);
+  background: var(--card);
+  color: var(--text);
+  font-size: 16px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+/* ===== גריד אימוג'י ===== */
+.emojiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--touch-min), 1fr));
+  gap: var(--space-2);
+}
+
+.emojiBtn {
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  border: 2px solid transparent;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.emojiBtn:active {
+  transform: scale(0.9);
+}
+
+.emojiOn {
+  background: var(--blue-light);
+  border-color: var(--blue);
+}
+
+/* ===== צ'יפים (קבוצות + משבצות) ===== */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+  border: 2px solid var(--border-soft);
+  color: var(--text);
+  font-weight: var(--fw-medium);
+  font-size: 14px;
+  transition: transform 0.12s ease;
+}
+
+.chip:active {
+  transform: scale(0.96);
+}
+
+.chipOn {
+  color: #fff;
+}
+
+.slotChip {
+  border-color: var(--blue) !important;
+}
+
+.slotChipOn {
+  background: var(--blue) !important;
+  border-color: var(--blue) !important;
+  color: #fff;
+}
+
+.gentle {
+  color: var(--coral);
+  font-size: 14px;
+  font-weight: var(--fw-medium);
+  text-align: center;
+}
+
+/* ===== שמירה ===== */
+.saveBtn {
+  min-height: 52px;
+  border-radius: var(--radius-pill);
+  background: var(--coral);
+  color: #fff;
+  font-weight: var(--fw-bold);
+  font-size: 18px;
+  box-shadow: var(--shadow-float);
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+
+.saveBtn:active {
+  transform: scale(0.97);
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+}

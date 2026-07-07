@@ -1,0 +1,133 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-top: var(--space-4);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--blue);
+}
+
+.subtitle {
+  color: var(--text-soft);
+  font-size: 17px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.fieldset {
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.label {
+  font-weight: var(--fw-medium);
+  color: var(--text);
+  font-size: 16px;
+}
+
+.input {
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--border-soft);
+  background: var(--card);
+  color: var(--text);
+  transition: border-color 0.15s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+select.input {
+  padding: 0 var(--space-3);
+}
+
+.avatarGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-3);
+}
+
+.avatarBtn {
+  aspect-ratio: 1;
+  min-height: var(--touch-min);
+  border-radius: var(--radius-sm);
+  background: var(--blue-light);
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.avatarBtn:active {
+  transform: scale(0.94);
+}
+
+.avatarActive {
+  box-shadow: 0 0 0 3px var(--yellow);
+  background: var(--coral-light);
+}
+
+.colorRow {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.colorBtn {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border-radius: var(--radius-pill);
+  transition: transform 0.12s ease;
+}
+
+.colorBtn:active {
+  transform: scale(0.94);
+}
+
+.colorActive {
+  box-shadow: 0 0 0 3px var(--card), 0 0 0 6px var(--yellow);
+}
+
+.error {
+  color: var(--coral);
+  font-weight: var(--fw-medium);
+  background: var(--coral-light);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+}
+
+.submit {
+  width: 100%;
+  font-weight: var(--fw-bold);
+  font-size: 17px;
+}
+
+.back {
+  width: 100%;
+}

@@ -1,0 +1,354 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-bottom: var(--space-6);
+}
+
+.header {
+  padding-top: var(--space-3);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 26px;
+  color: var(--blue);
+}
+
+/* ===== לוח שנה ===== */
+.calHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.calTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--fw-bold);
+  font-size: 18px;
+  color: var(--text);
+}
+
+.navArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border-radius: var(--radius-pill);
+  background: var(--blue-light);
+  color: var(--blue);
+  font-size: 26px;
+  line-height: 1;
+  font-weight: var(--fw-bold);
+  transition: transform 0.12s ease;
+}
+
+.navArrow:active {
+  transform: scale(0.92);
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.weekday {
+  text-align: center;
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+  color: var(--text-soft);
+}
+
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-1);
+}
+
+.dayCell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: var(--fw-medium);
+  color: var(--text);
+  border: 2px solid transparent;
+  transition: transform 0.12s ease;
+}
+
+.dayCell:active {
+  transform: scale(0.92);
+}
+
+.dayEmpty {
+  aspect-ratio: 1;
+}
+
+/* רמות שלמות — לבן→כחול בהיר→ירוק */
+.c0 {
+  background: var(--card);
+  border-color: var(--border-soft);
+  color: var(--text-soft);
+}
+.c1 {
+  background: var(--blue-light);
+}
+.c2 {
+  background: #bfe0d0;
+}
+.c3 {
+  background: #9ad9b8;
+  color: #fff;
+}
+.c4 {
+  background: var(--success);
+  color: #fff;
+}
+
+.dayToday {
+  border-color: var(--coral);
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.legendDot {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.legendText {
+  font-size: 13px;
+  color: var(--text-soft);
+  margin-inline-end: var(--space-3);
+}
+
+/* ===== כותרות מקטע ===== */
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.subTitle {
+  font-size: 16px;
+  color: var(--text);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+/* ===== רצף ===== */
+.streakBox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-card);
+  background: linear-gradient(135deg, #fff2d9, #ffe0d6);
+}
+
+.streakFlame {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.streakNum {
+  font-size: 32px;
+  font-weight: var(--fw-bold);
+  color: var(--coral);
+  line-height: 1;
+}
+
+.streakLabel {
+  font-size: 14px;
+  color: var(--text);
+  margin-top: 2px;
+}
+
+/* ===== צ'יפים ===== */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--blue-light);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: var(--fw-medium);
+}
+
+.chipCustom {
+  background: var(--coral-light);
+}
+
+.chipEmoji {
+  font-size: 16px;
+}
+
+.emptyHint {
+  color: var(--text-soft);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ===== תפריטים מנצחים ===== */
+.winners {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.winnerCard {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  border: 2px solid #fdeccf;
+}
+
+.winnerHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.winnerDate {
+  font-size: 13px;
+  font-weight: var(--fw-medium);
+  color: var(--text-soft);
+}
+
+.winnerFoods {
+  font-size: 15px;
+  color: var(--text);
+  font-weight: var(--fw-medium);
+}
+
+/* ===== גרף גיוון ===== */
+.chartHint {
+  font-size: 14px;
+  color: var(--text-soft);
+  margin-bottom: var(--space-4);
+}
+
+.chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-2);
+  height: 160px;
+}
+
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  height: 100%;
+}
+
+.barTrack {
+  flex: 1;
+  width: 100%;
+  max-width: 34px;
+  display: flex;
+  align-items: flex-end;
+  background: var(--border-soft);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.barFill {
+  width: 100%;
+  min-height: 4px;
+  background: linear-gradient(to top, #5b9bd5, #7dcea0);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  transition: height 0.4s ease;
+}
+
+.barValue {
+  color: #fff;
+  font-size: 12px;
+  font-weight: var(--fw-bold);
+  padding-top: 3px;
+}
+
+.barLabel {
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+  color: var(--text-soft);
+}
+
+/* ===== פירוט יום ===== */
+.dayMeal {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.dayMealTitle {
+  font-weight: var(--fw-bold);
+  color: var(--text);
+  margin-bottom: var(--space-1);
+}
+
+.dayMealFoods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.dayFood {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.dayMealMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.metaItem {
+  font-size: 14px;
+  color: var(--text-soft);
+}
+
+.dayWater {
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--blue-light);
+  color: var(--text);
+  font-weight: var(--fw-medium);
+  text-align: center;
+}

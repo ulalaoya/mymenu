@@ -1,0 +1,144 @@
+/* ===== Reset בסיסי ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  direction: rtl;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: var(--fw-regular);
+  line-height: 1.5;
+  background-color: var(--bg);
+  color: var(--text);
+  direction: rtl;
+  text-align: right;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: var(--fw-bold);
+  line-height: 1.25;
+  color: var(--text);
+}
+
+h1 {
+  font-size: 28px;
+}
+h2 {
+  font-size: 22px;
+}
+h3 {
+  font-size: 18px;
+}
+
+p {
+  font-size: 16px;
+}
+
+a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: 16px;
+  direction: rtl;
+}
+
+/* ===== כרטיס בסיסי ===== */
+.card {
+  background: var(--card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-5);
+}
+
+/* ===== כפתורי pill בסיסיים ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-pill);
+  font-size: 16px;
+  font-weight: var(--fw-medium);
+  transition: transform 0.12s ease, background-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: var(--blue);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #4d8bc5;
+}
+
+.btn-secondary {
+  background: var(--coral);
+  color: #fff;
+}
+
+.btn-ghost {
+  background: var(--blue-light);
+  color: var(--text);
+}
+
+/* ===== נגישות: מיקוד נראה ===== */
+:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+/* ===== מרכיבי מגע מינימליים ===== */
+.tap-target {
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+}
