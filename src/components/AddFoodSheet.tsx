@@ -12,6 +12,7 @@ import {
 } from '../utils/menuDisplay';
 import { inferFoodInfo } from '../engine/foodInference';
 import { BottomSheet } from './BottomSheet';
+import { FoodSymbol, FOOD_ICON_TOKENS } from './FoodSymbol';
 import styles from './AddFoodSheet.module.css';
 
 /** כל המשבצות כולל הממתק היומי — לבחירה "לאילו ארוחות מתאים" */
@@ -186,7 +187,7 @@ export function AddFoodSheet({
       <div className={styles.field}>
         <span className={styles.label}>בחרי סמל</span>
         <div className={styles.emojiGrid}>
-          {EMOJI_CHOICES.map((e) => (
+          {[...FOOD_ICON_TOKENS, ...EMOJI_CHOICES].map((e) => (
             <button
               key={e}
               type="button"
@@ -200,7 +201,7 @@ export function AddFoodSheet({
               aria-label={`סמל ${e}`}
               aria-pressed={emoji === e}
             >
-              {e}
+              <FoodSymbol symbol={e} size={24} />
             </button>
           ))}
         </div>

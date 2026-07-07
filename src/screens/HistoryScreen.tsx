@@ -18,6 +18,7 @@ import {
 import { todayString } from '../utils/date';
 import { SLOT_LABELS, SATIETY_FACES } from '../utils/menuDisplay';
 import { BottomSheet } from '../components/BottomSheet';
+import { FoodSymbol } from '../components/FoodSymbol';
 import {
   Progress,
   Calendar,
@@ -242,7 +243,9 @@ export function HistoryScreen() {
                 key={t.id}
                 className={`${styles.chip} ${t.isCustom ? styles.chipCustom : ''}`}
               >
-                <span className={styles.chipEmoji}>{t.emoji}</span>
+                <span className={styles.chipEmoji}>
+                  <FoodSymbol symbol={t.emoji} size={18} />
+                </span>
                 {t.name}
               </span>
             ))}
@@ -326,7 +329,7 @@ export function HistoryScreen() {
               <div className={styles.dayMealFoods}>
                 {m.foodEmojis.map((e, k) => (
                   <span key={k} className={styles.dayFood}>
-                    {e} {m.foodNames[k]}
+                    <FoodSymbol symbol={e} size={16} /> {m.foodNames[k]}
                   </span>
                 ))}
               </div>

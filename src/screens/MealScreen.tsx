@@ -42,6 +42,7 @@ import {
 } from '../utils/menuDisplay';
 import { BottomSheet } from '../components/BottomSheet';
 import { AddFoodSheet } from '../components/AddFoodSheet';
+import { FoodSymbol } from '../components/FoodSymbol';
 import { Confetti } from '../components/Confetti';
 import { StarFilled, StarEmpty, Add, Sparkle } from '../components/icons';
 import styles from './MealScreen.module.css';
@@ -271,7 +272,9 @@ export function MealScreen() {
         <div className={styles.foodList}>
           {slotFoods.map((f) => (
             <div key={f.id} className={styles.foodRow}>
-              <span className={styles.foodEmoji}>{f.emoji}</span>
+              <span className={styles.foodEmoji}>
+                <FoodSymbol symbol={f.emoji} size={22} />
+              </span>
               <span className={styles.foodName}>{f.name}</span>
               <span className={styles.foodGroups}>
                 {f.foodGroups.map((g) => (
@@ -399,7 +402,9 @@ export function MealScreen() {
                 className={styles.sheetFood}
                 onClick={() => addFood(f.id)}
               >
-                <span className={styles.foodEmoji}>{f.emoji}</span>
+                <span className={styles.foodEmoji}>
+                <FoodSymbol symbol={f.emoji} size={22} />
+              </span>
                 <span className={styles.foodName}>{f.name}</span>
                 <Add size={20} color="var(--blue)" />
               </button>
