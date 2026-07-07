@@ -96,11 +96,12 @@ export async function getMonthCalendar(
       .toArray(),
   ]);
 
-  // כמה משבצות שונות נרשמו לכל יום (ארוחה שנרשמה פעמיים נספרת פעם אחת)
+  // כמה משבצות שונות נרשמו לכל יום (ארוחה שנרשמה פעמיים נספרת פעם אחת).
+  // סופרים לפי מפתח הסלוט (כולל סלוטים מותאמים) כדי לא לאחד ארוחות שונות.
   const slotsByDate = new Map<string, Set<string>>();
   for (const log of logs) {
     const set = slotsByDate.get(log.date) ?? new Set<string>();
-    set.add(log.slot);
+    set.add(log.slotId ?? log.slot);
     slotsByDate.set(log.date, set);
   }
   const waterByDate = new Map<string, number>();
@@ -128,6 +129,8 @@ export async function getMonthCalendar(
 /** שורת ארוחה בפירוט היום */
 export interface DayMealEntry {
   slot: MealLog['slot'];
+  /** תווית תצוגה של הסלוט (סלוט מותאם) — אם קיימת */
+  slotLabel?: string;
   /** שמות המאכלים שנאכלו */
   foodNames: string[];
   /** אימוג'ים תואמים */
@@ -174,6 +177,7 @@ export async function getDayDetails(
         .filter((f): f is FoodItem => Boolean(f));
       return {
         slot: log.slot,
+        slotLabel: log.slotLabel,
         foodNames: items.map((f) => f.name),
         foodEmojis: items.map((f) => f.emoji),
         eatenAt: log.eatenAt,

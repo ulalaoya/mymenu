@@ -10,11 +10,8 @@ import styles from './App.module.css';
 const HomeScreen = lazy(() =>
   import('./screens/HomeScreen').then((m) => ({ default: m.HomeScreen })),
 );
-const MenuScreen = lazy(() =>
-  import('./screens/MenuScreen').then((m) => ({ default: m.MenuScreen })),
-);
-const LogScreen = lazy(() =>
-  import('./screens/LogScreen').then((m) => ({ default: m.LogScreen })),
+const MealScreen = lazy(() =>
+  import('./screens/MealScreen').then((m) => ({ default: m.MealScreen })),
 );
 const HistoryScreen = lazy(() =>
   import('./screens/HistoryScreen').then((m) => ({ default: m.HistoryScreen })),
@@ -63,18 +60,10 @@ export default function App() {
             }
           />
           <Route
-            path="/menu"
+            path="/meal/:key"
             element={
               <RequireAuth>
-                <MenuScreen />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/log"
-            element={
-              <RequireAuth>
-                <LogScreen />
+                <MealScreen />
               </RequireAuth>
             }
           />

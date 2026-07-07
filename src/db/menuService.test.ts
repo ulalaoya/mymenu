@@ -12,6 +12,16 @@ import {
   getWaterCups,
   setWaterCups,
   WATER_GOAL_CUPS,
+  getDiarySlots,
+  addFoodToSlot,
+  removeFoodFromSlot,
+  setSlotTime,
+  addCustomSlot,
+  removeCustomSlot,
+  logSlotMeal,
+  getSlotLog,
+  deleteSlotLog,
+  SWEET_KEY,
 } from './menuService';
 import type { Profile } from '../types';
 
@@ -158,6 +168,149 @@ describe('logMeal', () => {
     expect(stats!.tasteAvg).toBe(5);
     expect(stats!.satietyAvg).toBe(4);
     expect(stats!.timesEaten).toBe(1);
+  });
+});
+
+describe('יומן דינמי — getDiarySlots', () => {
+  it('מחזיר 5 ארוחות קבועות + ממתק, ממוין לפי שעה', async () => {
+    const menu = await getOrCreateTodayMenu(profile, DATE);
+    const slots = getDiarySlots(menu, profile);
+    expect(slots).toHaveLength(6); // 5 קבועות + ממתק
+    const keys = slots.map((s) => s.key);
+    expect(keys).toContain('בוקר');
+    expect(keys).toContain(SWEET_KEY);
+    // ממוין עולה לפי שעה
+    const times = slots
+      .map((s) => s.plannedTime)
+      .filter(Boolean)
+      .map((t) => Number(t.replace(':', '')));
+    const sorted = [...times].sort((a, b) => a - b);
+    expect(times).toEqual(sorted);
+  });
+});
+
+describe('יומן דינמי — הוספה/הורדת מאכלים ושעה', () => {
+  it('מוסיף ומסיר מאכל בסלוט קבוע', async () => {
+    const menu = await getOrCreateTodayMenu(profile, DATE);
+    const food = (await db.foods.toArray()).find((f) =>
+      f.category.includes('בוקר'),
+    )!;
+    await addFoodToSlot(menu.id, 'בוקר', food.id);
+    let updated = (await db.menus.get(menu.id))!;
+    let breakfast = getDiarySlots(updated, profile).find((s) => s.key === 'בוקר')!;
+    expect(breakfast.foodIds).toContain(food.id);
+
+    await removeFoodFromSlot(menu.id, 'בוקר', food.id);
+    updated = (await db.menus.get(menu.id))!;
+    breakfast = getDiarySlots(updated, profile).find((s) => s.key === 'בוקר')!;
+    expect(breakfast.foodIds).not.toContain(food.id);
+  });
+
+  it('הוספה לממתק קובעת sweetFoodId', async () => {
+    const menu = await getOrCreateTodayMenu(profile, DATE);
+    const sweet = (await db.foods.toArray()).find((f) =>
+      f.category.includes('ממתק'),
+    )!;
+    await addFoodToSlot(menu.id, SWEET_KEY, sweet.id);
+    const updated = (await db.menus.get(menu.id))!;
+    expect(updated.sweetFoodId).toBe(sweet.id);
+  });
+
+  it('setSlotTime מעדכן שעה של סלוט קבוע ושל הממתק', async () => {
+    const menu = await getOrCreateTodayMenu(profile, DATE);
+    await setSlotTime(menu.id, 'בוקר', '06:15');
+    await setSlotTime(menu.id, SWEET_KEY, '17:45');
+    const updated = (await db.menus.get(menu.id))!;
+    const slots = getDiarySlots(updated, profile);
+    expect(slots.find((s) => s.key === 'בוקר')!.plannedTime).toBe('06:15');
+    expect(slots.find((s) => s.key === SWEET_KEY)!.plannedTime).toBe('17:45');
+  });
+});
+
+describe('יומן דינמי — סלוטים מותאמים', () => {
+  it('addCustomSlot מוסיף ארוחה ומחזיר מזהה; removeCustomSlot מסיר', async () => {
+    const menu = await getOrCreateTodayMenu(profile, DATE);
+    const id = await addCustomSlot(menu.id, {
+      label: 'חטיף אחה״צ',
+      plannedTime: '15:00',
+    });
+    expect(id).toBeDefined();
+
+    let updated = (await db.menus.get(menu.id))!;
+    let custom = getDiarySlots(updated, profile).find((s) => s.key === id);
+    expect(custom).toBeDefined();
+    expect(custom!.custom).toBe(true);
+    expect(custom!.label).toBe('חטיף אחה״צ');
+
+    await removeCustomSlot(menu.id, id!);
+    updated = (await db.menus.get(menu.id))!;
+    custom = getDiarySlots(updated, profile).find((s) => s.key === id);
+    expect(custom).toBeUndefined();
+  });
+
+  it('reshuffle שומר על סלוטים מותאמים', async () => {
+    const menu = await getOrCreateTodayMenu(profile, DATE);
+    const id = await addCustomSlot(menu.id, {
+      label: 'ארוחת לילה',
+      plannedTime: '21:00',
+    });
+    await reshuffleTodayMenu(profile, DATE);
+    const updated = (await db.menus.get(menu.id))!;
+    const custom = getDiarySlots(updated, profile).find((s) => s.key === id);
+    expect(custom, 'סלוט מותאם אבד בערבוב').toBeDefined();
+  });
+});
+
+describe('יומן דינמי — רישום נאכל פר-סלוט', () => {
+  it('logSlotMeal רושם, נטען ב-getSlotLog, ומחיקה מסירה', async () => {
+    const menu = await getOrCreateTodayMenu(profile, DATE);
+    const food = (await db.foods.toArray())[0];
+    await addFoodToSlot(menu.id, 'עשר', food.id);
+
+    await logSlotMeal(profile.id, DATE, {
+      slotKey: 'עשר',
+      slot: 'עשר',
+      foodIds: [food.id],
+      plannedTime: '10:00',
+      tasteRating: 5,
+      satietyRating: 4,
+    });
+
+    const log = await getSlotLog(profile.id, DATE, 'עשר');
+    expect(log).toBeDefined();
+    expect(log!.slotId).toBe('עשר');
+    expect(log!.foodIds).toContain(food.id);
+    // foodStats התעדכנו
+    const stats = await db.foodStats.get(`${profile.id}::${food.id}`);
+    expect(stats!.timesEaten).toBeGreaterThanOrEqual(1);
+
+    await deleteSlotLog(profile.id, DATE, 'עשר');
+    expect(await getSlotLog(profile.id, DATE, 'עשר')).toBeUndefined();
+  });
+
+  it('logSlotMeal הוא upsert — לא יוצר כפילות לאותו סלוט', async () => {
+    const food = (await db.foods.toArray())[0];
+    await logSlotMeal(profile.id, DATE, {
+      slotKey: 'בוקר',
+      slot: 'בוקר',
+      foodIds: [food.id],
+      plannedTime: '07:00',
+      tasteRating: 3,
+    });
+    await logSlotMeal(profile.id, DATE, {
+      slotKey: 'בוקר',
+      slot: 'בוקר',
+      foodIds: [food.id],
+      plannedTime: '07:30',
+      tasteRating: 5,
+    });
+    const logs = await db.mealLogs
+      .where('[profileId+date]')
+      .equals([profile.id, DATE])
+      .toArray();
+    const breakfastLogs = logs.filter((l) => (l.slotId ?? l.slot) === 'בוקר');
+    expect(breakfastLogs).toHaveLength(1);
+    expect(breakfastLogs[0].tasteRating).toBe(5);
   });
 });
 

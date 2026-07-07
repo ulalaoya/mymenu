@@ -59,9 +59,15 @@ export interface MenuSlot {
   slot: MealSlot;
   foodIds: string[];
   plannedTime: string;
+  /** מזהה ייחודי לסלוט מותאם שהמשתמשת הוסיפה (סלוטים קבועים: undefined) */
+  id?: string;
+  /** תווית תצוגה לסלוט מותאם (למשל "חטיף אחה"צ") */
+  label?: string;
+  /** true אם זהו סלוט שהמשתמשת הוסיפה ידנית (יומן דינמי) */
+  custom?: boolean;
 }
 
-/** תפריט יומי מומלץ */
+/** תפריט יומי מומלץ — משמש גם כיומן האכילה הדינמי של היום */
 export interface Menu {
   id: string;
   profileId: string;
@@ -69,6 +75,8 @@ export interface Menu {
   date: string;
   slots: MenuSlot[];
   sweetFoodId?: string;
+  /** שעת הממתק היומי (ניתנת לעדכון פר-יום, כמו שאר הסלוטים) */
+  sweetTime?: string;
   overallRating?: number;
   isWinner: boolean;
 }
@@ -84,6 +92,13 @@ export interface MealLog {
   profileId: string;
   date: string;
   slot: MealSlot;
+  /**
+   * מזהה הסלוט ביומן — לסלוטים קבועים שווה לשם המשבצת, ולסלוטים מותאמים
+   * שווה למזהה הייחודי. משמש לבידול ולזיהוי "נאכל" פר-סלוט (כולל מותאמים).
+   */
+  slotId?: string;
+  /** תווית תצוגה של סלוט מותאם (למקרה שאין שם משבצת קבוע) */
+  slotLabel?: string;
   foodIds: string[];
   /** timestamp של שעת האכילה */
   eatenAt: number;

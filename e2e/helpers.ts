@@ -10,8 +10,12 @@ export async function registerProfile(
   password = '1234',
 ): Promise<string> {
   await page.goto('/login');
-  // אם כבר מחובר (זיהוי מכשיר) — נצא קודם דרך ניקוי אחסון בבדיקה עצמה.
-  await page.getByText('פרופיל חדש').click();
+  // ללא פרופילים במכשיר, מסך הכניסה מפנה אוטומטית להרשמה. אם בכל זאת מוצג
+  // כרטיס "פרופיל חדש" (קיימים פרופילים) — לוחצים עליו.
+  const newProfileCard = page.getByText('פרופיל חדש');
+  if (await newProfileCard.count()) {
+    await newProfileCard.click().catch(() => {});
+  }
 
   await expect(
     page.getByRole('heading', { name: /פרופיל חדש/ }),
@@ -22,8 +26,8 @@ export async function registerProfile(
   await page.getByPlaceholder('התשובה שרק את יודעת').fill('רקסי');
   await page.getByRole('button', { name: 'יוצרים פרופיל!' }).click();
 
-  // הגענו למסך הבית — ברכה + התפריט של היום
-  await expect(page.getByRole('heading', { name: 'התפריט של היום' })).toBeVisible();
+  // הגענו למסך הבית — יומן היום
+  await expect(page.getByRole('heading', { name: 'היומן של היום' })).toBeVisible();
   return username;
 }
 

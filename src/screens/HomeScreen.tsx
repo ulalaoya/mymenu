@@ -1,4 +1,4 @@
-// ===== מסך הבית — SPEC סעיף 6.2 =====
+// ===== מסך הבית — יומן האכילה היומי הדינמי (SPEC 6.2, מיזוג 6.3+6.4) =====
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -9,34 +9,59 @@ import {
   getOrCreateTodayMenu,
   getWaterCups,
   setWaterCups,
+  reshuffleTodayMenu,
+  getDiarySlots,
+  setSlotTime,
+  addCustomSlot,
+  removeCustomSlot,
   WATER_GOAL_CUPS,
 } from '../db/menuService';
 import { getDailyTip } from '../engine';
-import type { FoodItem, MealSlot, Tip } from '../types';
-import { todayString, minutesOfDay, timeToMinutes } from '../utils/date';
+import type { FoodItem, Tip } from '../types';
+import { todayString, toTimeString } from '../utils/date';
 import {
-  DAY_SLOTS,
-  SLOT_LABELS,
-  SLOT_ICONS,
   ALL_FOOD_GROUPS,
   FOOD_GROUP_COLORS,
+  SLOT_ICONS,
   greetingForHour,
   greetingEmoji,
 } from '../utils/menuDisplay';
-import { Sparkle, Add, Water, CompletedMeal, Clock } from '../components/icons';
+import { BottomSheet } from '../components/BottomSheet';
+import {
+  Sparkle,
+  Add,
+  Water,
+  CompletedMeal,
+  Clock,
+  Refresh,
+} from '../components/icons';
 import styles from './HomeScreen.module.css';
 
-/** חלון "הגיע הזמן" סביב השעה המתוכננת (בדקות) */
-const DUE_WINDOW = 45;
+/** תאריך היום בעברית ידידותית (יום בשבוע + יום + חודש) */
+function prettyToday(): string {
+  try {
+    return new Date().toLocaleDateString('he-IL', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    });
+  } catch {
+    return todayString();
+  }
+}
 
 export function HomeScreen() {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const date = todayString();
-  const now = new Date();
-  const hour = now.getHours();
+  const hour = new Date().getHours();
 
-  // התפריט של היום (נבנה פעם אחת, אידמפוטנטי)
+  const [busy, setBusy] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [newLabel, setNewLabel] = useState('');
+  const [newTime, setNewTime] = useState(() => toTimeString());
+
+  // התפריט/היומן של היום (נבנה פעם אחת, אידמפוטנטי)
   useEffect(() => {
     if (profile) void getOrCreateTodayMenu(profile, date);
   }, [profile, date]);
@@ -82,39 +107,65 @@ export function HomeScreen() {
     return m;
   }, [foods]);
 
-  // קבוצות מזון שכוסו בפועל היום (מתוך רישומי הארוחות)
-  const coveredGroups = useMemo(() => {
-    const s = new Set<string>();
-    for (const log of mealLogs ?? []) {
-      for (const id of log.foodIds) {
-        foodsById.get(id)?.foodGroups.forEach((g) => s.add(g));
-      }
-    }
-    return s;
-  }, [mealLogs, foodsById]);
+  // סלוטי היומן (ארוחות קבועות + ממתק + מותאמים), ממוינים לפי שעה
+  const diarySlots = useMemo(
+    () => (menu && profile ? getDiarySlots(menu, profile) : []),
+    [menu, profile],
+  );
 
-  // מיפוי משבצת → האם נרשמה ארוחה
-  const loggedSlots = useMemo(() => {
-    const s = new Set<MealSlot>();
-    (mealLogs ?? []).forEach((l) => s.add(l.slot));
+  // אילו סלוטים כבר נאכלו (לפי מפתח)
+  const eatenKeys = useMemo(() => {
+    const s = new Set<string>();
+    (mealLogs ?? []).forEach((l) => s.add(l.slotId ?? l.slot));
     return s;
   }, [mealLogs]);
 
-  function slotStatus(slot: MealSlot, plannedTime: string) {
-    if (loggedSlots.has(slot)) return 'eaten' as const;
-    const planned = timeToMinutes(plannedTime);
-    const nowMin = minutesOfDay(now);
-    if (planned == null) return 'future' as const;
-    if (Math.abs(nowMin - planned) <= DUE_WINDOW) return 'due' as const;
-    if (nowMin > planned + DUE_WINDOW) return 'skipped' as const;
-    return 'future' as const;
+  // קבוצות מזון שכוסו בפועל היום (מתוך רישומי הארוחות)
+  const coveredGroups = useMemo(() => {
+    const set = new Set<string>();
+    for (const log of mealLogs ?? []) {
+      for (const id of log.foodIds) {
+        foodsById.get(id)?.foodGroups.forEach((g) => set.add(g));
+      }
+    }
+    return set;
+  }, [mealLogs, foodsById]);
+
+  async function handleTime(key: string, value: string) {
+    if (!menu) return;
+    await setSlotTime(menu.id, key, value);
+  }
+
+  async function handleRemoveCustom(key: string) {
+    if (!menu) return;
+    await removeCustomSlot(menu.id, key);
   }
 
   async function handleWaterCup(target: number) {
     if (!profile) return;
-    // לחיצה על כוס מלאה מבטלת עד אליה (target-1); אחרת ממלאים עד היעד
     const next = waterCups === target ? target - 1 : target;
     await setWaterCups(profile.id, date, next);
+  }
+
+  async function doReshuffle() {
+    if (!profile) return;
+    setBusy(true);
+    try {
+      await reshuffleTodayMenu(profile, date);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function confirmAddMeal() {
+    if (!menu) return;
+    const id = await addCustomSlot(menu.id, {
+      label: newLabel,
+      plannedTime: newTime,
+    });
+    setAddOpen(false);
+    setNewLabel('');
+    if (id) navigate(`/meal/${id}`);
   }
 
   const greeting = `${greetingForHour(hour)}, ${profile?.username ?? ''}! ${greetingEmoji(hour)}`;
@@ -126,58 +177,91 @@ export function HomeScreen() {
           MyMenu <Sparkle size={26} />
         </h1>
         <p className={styles.greeting}>{greeting}</p>
+        <p className={styles.dateText}>{prettyToday()}</p>
       </header>
 
-      {/* ===== ציר הזמן של הארוחות ===== */}
+      {/* ===== יומן הארוחות של היום ===== */}
       <section className="card">
         <div className={styles.cardTitle}>
           <Clock size={22} />
-          <h2>התפריט של היום</h2>
+          <h2>היומן של היום</h2>
+          <button
+            type="button"
+            className={styles.suggestBtn}
+            onClick={doReshuffle}
+            disabled={busy}
+            aria-label="הצעה חדשה"
+          >
+            <Refresh size={18} color="var(--blue)" />
+            הצעה חדשה
+          </button>
         </div>
+
         <ol className={styles.timeline}>
-          {DAY_SLOTS.map((slot) => {
-            const menuSlot = menu?.slots.find((s) => s.slot === slot);
-            const Icon = SLOT_ICONS[slot];
-            const status = slotStatus(slot, menuSlot?.plannedTime ?? '');
-            const names = (menuSlot?.foodIds ?? [])
+          {diarySlots.map((s) => {
+            const Icon = SLOT_ICONS[s.slot];
+            const eaten = eatenKeys.has(s.key);
+            const names = s.foodIds
               .map((id) => foodsById.get(id)?.name)
               .filter(Boolean) as string[];
             return (
               <li
-                key={slot}
-                className={`${styles.mealRow} ${styles[`status_${status}`]}`}
-                onClick={() => navigate('/menu')}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') navigate('/menu');
-                }}
+                key={s.key}
+                className={`${styles.mealRow} ${eaten ? styles.status_eaten : ''}`}
               >
-                <div className={styles.mealTime}>
-                  {menuSlot?.plannedTime || '—'}
-                </div>
-                <div className={styles.mealIcon}>
-                  <Icon size={26} />
-                </div>
-                <div className={styles.mealBody}>
-                  <div className={styles.mealName}>{SLOT_LABELS[slot]}</div>
-                  <div className={styles.mealFoods}>
-                    {names.length > 0 ? names.join(' · ') : 'עוד לא נבחר'}
-                  </div>
-                </div>
-                <div className={styles.mealStatus}>
-                  {status === 'eaten' && <CompletedMeal size={24} />}
-                  {status === 'due' && (
-                    <span className={styles.dueBadge}>הגיע הזמן!</span>
+                <input
+                  type="time"
+                  className={styles.timeEdit}
+                  value={s.plannedTime}
+                  onChange={(e) => handleTime(s.key, e.target.value)}
+                  aria-label={`שעת ${s.label}`}
+                />
+                <button
+                  type="button"
+                  className={styles.mealMain}
+                  onClick={() => navigate(`/meal/${s.key}`)}
+                >
+                  <span className={styles.mealIcon}>
+                    <Icon size={24} />
+                  </span>
+                  <span className={styles.mealBody}>
+                    <span className={styles.mealName}>{s.label}</span>
+                    <span className={styles.mealFoods}>
+                      {names.length > 0 ? names.join(' · ') : 'הוסיפי מה אכלת'}
+                    </span>
+                  </span>
+                  {eaten && (
+                    <span className={styles.mealStatus}>
+                      <CompletedMeal size={22} />
+                    </span>
                   )}
-                  {status === 'skipped' && (
-                    <span className={styles.skippedBadge}>דולגה</span>
-                  )}
-                </div>
+                </button>
+                {s.custom && (
+                  <button
+                    type="button"
+                    className={styles.removeSlot}
+                    onClick={() => handleRemoveCustom(s.key)}
+                    aria-label={`מחיקת ${s.label}`}
+                  >
+                    ✕
+                  </button>
+                )}
               </li>
             );
           })}
         </ol>
+
+        <button
+          type="button"
+          className={styles.addMealBtn}
+          onClick={() => {
+            setNewTime(toTimeString());
+            setAddOpen(true);
+          }}
+        >
+          <Add size={20} color="var(--coral)" />
+          הוספת ארוחה
+        </button>
       </section>
 
       {/* ===== מד מים ===== */}
@@ -255,16 +339,40 @@ export function HomeScreen() {
         </div>
       </section>
 
-      {/* ===== כפתור צף ===== */}
-      <button
-        type="button"
-        className={styles.fab}
-        onClick={() => navigate('/log')}
-        aria-label="רשמי מה אכלת"
+      {/* ===== הוספת ארוחה (סלוט מותאם) ===== */}
+      <BottomSheet
+        open={addOpen}
+        title="הוספת ארוחה ליומן"
+        onClose={() => setAddOpen(false)}
       >
-        <Add size={26} color="#fff" />
-        <span>רשמי מה אכלת</span>
-      </button>
+        <label className={styles.addField}>
+          <span className={styles.addLabel}>איך לקרוא לארוחה?</span>
+          <input
+            type="text"
+            className={styles.addInput}
+            value={newLabel}
+            onChange={(e) => setNewLabel(e.target.value)}
+            placeholder="למשל: חטיף אחה״צ"
+            autoComplete="off"
+          />
+        </label>
+        <label className={styles.addField}>
+          <span className={styles.addLabel}>באיזו שעה?</span>
+          <input
+            type="time"
+            className={styles.addInput}
+            value={newTime}
+            onChange={(e) => setNewTime(e.target.value)}
+          />
+        </label>
+        <button
+          type="button"
+          className={styles.addConfirm}
+          onClick={confirmAddMeal}
+        >
+          הוספה ✨
+        </button>
+      </BottomSheet>
     </div>
   );
 }

@@ -12,6 +12,11 @@ import './styles/global.css';
 import App from './App';
 import { AuthProvider } from './hooks/useAuth';
 import { seedIfEmpty } from './db/database';
+import { ensurePersistentStorage } from './utils/storage';
+
+// בקשת אחסון קבוע — מונע מ-Android/Chrome למחוק את ה-IndexedDB (פרופילים
+// והגדרות). קריטי כדי שההרשמה תישמר ולא תתבקש שוב בכל פתיחה.
+void ensurePersistentStorage();
 
 // זריעת מאגר בסיסי אם ריק (המימוש המלא בשלב 3)
 void seedIfEmpty();

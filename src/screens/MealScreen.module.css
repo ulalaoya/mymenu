@@ -5,11 +5,37 @@
 }
 
 .header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   padding-top: var(--space-3);
+}
+
+.backBtn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: var(--blue-light);
+  color: var(--blue);
+  font-size: 22px;
+  font-weight: var(--fw-bold);
+}
+
+.headIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  background: var(--blue-light);
+  flex-shrink: 0;
 }
 
 .title {
   color: var(--blue);
+  font-size: 22px;
 }
 
 .sectionTitle {
@@ -17,74 +43,6 @@
   font-size: 18px;
 }
 
-/* ===== צ'יפים של משבצות ===== */
-.slotChips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.slotChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: var(--touch-min);
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-pill);
-  background: var(--blue-light);
-  color: var(--text);
-  font-weight: var(--fw-medium);
-  font-size: 14px;
-  transition: transform 0.12s ease;
-}
-
-.slotChip:active {
-  transform: scale(0.96);
-}
-
-.slotChipOn {
-  background: var(--blue);
-  color: #fff;
-}
-
-/* ===== רשת מאכלים ===== */
-.foodGrid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
-}
-
-.foodChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: var(--touch-min);
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-pill);
-  background: var(--bg);
-  border: 2px solid var(--border-soft);
-  color: var(--text);
-  font-weight: var(--fw-medium);
-  font-size: 14px;
-  transition: transform 0.12s ease;
-}
-
-.foodChip:active {
-  transform: scale(0.96);
-}
-
-.foodChipOn {
-  background: var(--success);
-  border-color: var(--success);
-  color: #fff;
-}
-
-.chipEmoji {
-  font-size: 18px;
-}
-
-.searchInput,
 .timeInput {
   width: 100%;
   min-height: var(--touch-min);
@@ -93,29 +51,85 @@
   border: 2px solid var(--border-soft);
   background: var(--card);
   color: var(--text);
+  text-align: center;
 }
 
-.searchInput:focus,
 .timeInput:focus {
   outline: none;
   border-color: var(--blue);
 }
 
-.timeInput {
-  text-align: center;
+/* ===== מאכלים בארוחה ===== */
+.foodList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
-.addFree {
+.foodRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  min-height: var(--touch-min);
+}
+
+.foodEmoji {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.foodName {
+  font-weight: var(--fw-medium);
+  color: var(--text);
+}
+
+.foodGroups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-inline-start: auto;
+}
+
+.groupTag {
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  color: #fff;
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+}
+
+.removeBtn {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--text-soft);
+  font-size: 15px;
+}
+
+.empty {
+  color: var(--text-soft);
+  font-size: 15px;
+  margin-bottom: var(--space-3);
+}
+
+.addBtn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-2);
-  margin-top: var(--space-3);
+  width: 100%;
   min-height: var(--touch-min);
-  padding: 0 var(--space-4);
   border-radius: var(--radius-pill);
   background: var(--coral-light);
   color: var(--coral);
   font-weight: var(--fw-medium);
+  font-size: 15px;
 }
 
 /* ===== כוכבים ===== */
@@ -226,6 +240,69 @@
   box-shadow: none;
 }
 
+.unlogBtn {
+  min-height: var(--touch-min);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 15px;
+}
+
+/* ===== מגירת הוספה ===== */
+.sheetLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: var(--space-3) 0 var(--space-2);
+  font-weight: var(--fw-medium);
+  color: var(--text-soft);
+}
+
+.sheetFood {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  margin-bottom: var(--space-2);
+  text-align: start;
+}
+
+.sheetFood .foodName {
+  flex: 1;
+}
+
+.searchInput {
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--border-soft);
+  background: var(--card);
+  color: var(--text);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+.addFree {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--coral-light);
+  color: var(--coral);
+  font-weight: var(--fw-medium);
+}
+
 /* ===== חגיגה ===== */
 .celebrate {
   position: fixed;
@@ -240,17 +317,5 @@
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-float);
   z-index: 70;
-  animation: pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.4);
   white-space: nowrap;
-}
-
-@keyframes pop {
-  0% {
-    transform: translate(-50%, -50%) scale(0.4);
-    opacity: 0;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
 }

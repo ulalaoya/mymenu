@@ -320,7 +320,9 @@ export function HistoryScreen() {
           const face = SATIETY_FACES.find((f) => f.value === m.satietyRating);
           return (
             <div key={i} className={styles.dayMeal}>
-              <div className={styles.dayMealTitle}>{SLOT_LABELS[m.slot]}</div>
+              <div className={styles.dayMealTitle}>
+                {m.slotLabel ?? SLOT_LABELS[m.slot]}
+              </div>
               <div className={styles.dayMealFoods}>
                 {m.foodEmojis.map((e, k) => (
                   <span key={k} className={styles.dayFood}>

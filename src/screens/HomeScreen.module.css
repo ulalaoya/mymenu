@@ -31,6 +31,30 @@
   margin-bottom: var(--space-4);
 }
 
+.dateText {
+  color: var(--text-soft);
+  font-size: 15px;
+}
+
+/* כפתור "הצעה חדשה" בכותרת היומן — נדחף לקצה */
+.suggestBtn {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--blue-light);
+  color: var(--blue);
+  font-size: 14px;
+  font-weight: var(--fw-medium);
+}
+
+.suggestBtn:disabled {
+  opacity: 0.5;
+}
+
 /* ===== ציר זמן הארוחות ===== */
 .timeline {
   display: flex;
@@ -49,16 +73,51 @@
   transition: transform 0.12s ease, background 0.12s ease;
 }
 
-.mealRow:active {
+/* שדה שעה נערך ישירות ביומן (override פר-יום) */
+.timeEdit {
+  width: 66px;
+  min-height: 40px;
+  flex-shrink: 0;
+  padding: 0 4px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border-soft);
+  background: var(--card);
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: var(--fw-medium);
+  text-align: center;
+}
+
+.timeEdit:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+/* גוף השורה — כפתור הפתיחה לעמוד הארוחה */
+.mealMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: transparent;
+  text-align: start;
+  transition: transform 0.12s ease;
+}
+
+.mealMain:active {
   transform: scale(0.99);
 }
 
-.mealTime {
-  min-width: 44px;
-  font-weight: var(--fw-medium);
-  font-size: 14px;
+/* כפתור מחיקת סלוט מותאם */
+.removeSlot {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  background: var(--bg);
   color: var(--text-soft);
-  text-align: center;
+  font-size: 15px;
 }
 
 .mealIcon {
@@ -75,14 +134,18 @@
 .mealBody {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .mealName {
+  display: block;
   font-weight: var(--fw-medium);
   color: var(--text);
 }
 
 .mealFoods {
+  display: block;
   font-size: 14px;
   color: var(--text-soft);
   overflow: hidden;
@@ -230,7 +293,64 @@
   transform: scale(1.02);
 }
 
-/* ===== כפתור צף ===== */
+/* ===== הוספת ארוחה ===== */
+.addMealBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  margin-top: var(--space-3);
+  min-height: var(--touch-min);
+  border-radius: var(--radius-pill);
+  background: var(--coral-light);
+  color: var(--coral);
+  font-weight: var(--fw-medium);
+  font-size: 15px;
+}
+
+.addMealBtn:active {
+  transform: scale(0.98);
+}
+
+.addField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.addLabel {
+  font-weight: var(--fw-medium);
+  color: var(--text);
+}
+
+.addInput {
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--border-soft);
+  background: var(--card);
+  color: var(--text);
+}
+
+.addInput:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+.addConfirm {
+  width: 100%;
+  min-height: 52px;
+  border-radius: var(--radius-pill);
+  background: var(--coral);
+  color: #fff;
+  font-weight: var(--fw-bold);
+  font-size: 17px;
+}
+
+/* ===== כפתור צף (לא בשימוש כרגע) ===== */
 .fab {
   position: fixed;
   bottom: 84px;

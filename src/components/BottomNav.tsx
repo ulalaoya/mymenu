@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Journal, Edit, Progress, FoodGroups } from './icons';
+import { Home, Journal, Progress } from './icons';
 import styles from './BottomNav.module.css';
 
 interface NavItem {
@@ -10,8 +10,6 @@ interface NavItem {
 
 const items: NavItem[] = [
   { to: '/', label: 'בית', Icon: Home },
-  { to: '/menu', label: 'תפריט', Icon: FoodGroups },
-  { to: '/log', label: 'רישום', Icon: Edit },
   { to: '/history', label: 'היסטוריה', Icon: Progress },
   { to: '/settings', label: 'הגדרות', Icon: Journal },
 ];

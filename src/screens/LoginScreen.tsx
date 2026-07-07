@@ -1,5 +1,5 @@
 // ===== מסך בחירת פרופיל / התחברות (SPEC סעיפים 3.2, 6.1) =====
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAuth } from '../hooks/useAuth';
@@ -19,9 +19,16 @@ export function LoginScreen() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  // אם כבר יש פרופיל פעיל (כניסה אוטומטית) — הביתה
-  if (active) {
-    navigate('/', { replace: true });
+  const noProfiles = profiles !== undefined && profiles.length === 0;
+
+  // הפניות (בכניסה אוטומטית / משתמשת חדשה) — ב-effect כדי לא לעדכן ניתוב
+  // בזמן רינדור. משתמשת קיימת נכנסת אוטומטית; חדשה מופנית ישר להרשמה.
+  useEffect(() => {
+    if (active) navigate('/', { replace: true });
+    else if (noProfiles) navigate('/register', { replace: true });
+  }, [active, noProfiles, navigate]);
+
+  if (active || noProfiles) {
     return null;
   }
 

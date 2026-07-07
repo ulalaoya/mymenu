@@ -5,6 +5,7 @@ import {
   SESSION_ID,
   getProfileByUsername,
   getSession,
+  getAllProfiles,
 } from './database';
 import {
   generateSalt,
@@ -12,6 +13,7 @@ import {
   verifyPassword,
   isValidPassword,
 } from './auth';
+import { ensurePersistentStorage } from '../utils/storage';
 
 /** שעות ארוחה ברירת מחדל (SPEC סעיף 5.1) */
 export const DEFAULT_MEAL_TIMES: Partial<Record<MealSlot, string>> = {
@@ -20,6 +22,7 @@ export const DEFAULT_MEAL_TIMES: Partial<Record<MealSlot, string>> = {
   צהריים: '13:30',
   מנחה: '16:00',
   ערב: '19:00',
+  ממתק: '16:30',
 };
 
 /** קלט ליצירת פרופיל חדש */
@@ -57,6 +60,9 @@ export async function createProfile(
   if (existing) {
     throw new Error('שם המשתמש הזה כבר תפוס, נסי שם אחר');
   }
+
+  // מחוות המשתמש (לחיצת "יוצרים פרופיל") היא הזמן הטוב ביותר לבקש אחסון קבוע.
+  await ensurePersistentStorage();
 
   const salt = generateSalt();
   const passwordHash = await hashPassword(input.password, salt);
@@ -173,16 +179,38 @@ export async function login(
 }
 
 /**
- * מחזיר את הפרופיל האחרון שהתחבר במכשיר (זיהוי מכשיר / כניסה אוטומטית),
- * או null אם אין session או שהפרופיל נמחק.
+ * מחזיר את הפרופיל לכניסה אוטומטית (זיהוי מכשיר):
+ * 1. אם ה-session מצביע על פרופיל קיים — הוא.
+ * 2. אחרת, אם קיים פרופיל כלשהו במכשיר — הפרופיל האחרון שנוצר (נפילה עמידה
+ *    למקרה שרשומת ה-session אבדה/אופסה, כדי לא לבקש הרשמה מחדש בטעות).
+ * 3. אם אין אף פרופיל — null.
+ * במקרה של נפילה (2) מעדכן את ה-session כדי שהזיהוי יהיה יציב מכאן והלאה.
  */
 export async function getLastProfile(): Promise<Profile | null> {
   const session = await getSession();
-  if (!session?.lastProfileId) {
-    return null;
+  if (session?.lastProfileId) {
+    const profile = await db.profiles.get(session.lastProfileId);
+    if (profile) return profile;
   }
-  const profile = await db.profiles.get(session.lastProfileId);
-  return profile ?? null;
+
+  // נפילה עמידה: רק כשאין רשומת session כלל (למשל אחרי איפוס/מחיקה חלקית של
+  // ה-IndexedDB) — נכנסים אוטומטית לפרופיל האחרון שנוצר, כדי לא לבקש הרשמה
+  // מחדש בטעות. יציאה מפורשת ("החלפת משתמש") משאירה רשומת session עם
+  // lastProfileId ריק, ולכן שם לא נכנסים אוטומטית — מוצג מסך בחירת הפרופיל.
+  if (!session) {
+    const all = await getAllProfiles(); // ממויין לפי createdAt עולה
+    const fallback = all.length > 0 ? all[all.length - 1] : null;
+    if (fallback) {
+      const deviceToken = await ensureDeviceToken();
+      await db.session.put({
+        id: SESSION_ID,
+        deviceToken,
+        lastProfileId: fallback.id,
+      });
+      return fallback;
+    }
+  }
+  return null;
 }
 
 /**

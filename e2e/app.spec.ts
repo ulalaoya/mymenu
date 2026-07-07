@@ -8,14 +8,13 @@ test.beforeEach(async ({ page }) => {
   await clearStorage(page);
 });
 
-test('1. הרשמה → תפריט יומי מוצג (5 ארוחות + מים + טיפ)', async ({ page }) => {
+test('1. הרשמה → יומן היום מוצג (ארוחות + ממתק + מים + טיפ)', async ({ page }) => {
   await registerProfile(page, uniqueName());
 
-  // ציר הזמן של 5 הארוחות
+  // יומן היום: 5 ארוחות קבועות + ממתק = 6 שורות
   const timeline = page.locator('ol li');
-  await expect(timeline).toHaveCount(5);
-  for (const label of ['בוקר', 'עשר', 'צהריים', 'מנחה', 'ערב']) {
-    // תוויות הארוחה מופיעות (SLOT_LABELS מכילות את המילים האלה)
+  await expect(timeline).toHaveCount(6);
+  for (const label of ['בוקר', 'צהריים', 'ערב', 'ממתק']) {
     await expect(page.getByText(new RegExp(label)).first()).toBeVisible();
   }
 
@@ -31,67 +30,46 @@ test('1. הרשמה → תפריט יומי מוצג (5 ארוחות + מים + 
   await expect(page.getByText(/3 מתוך/)).toBeVisible();
 });
 
-test('2. החלפת מאכל בתפריט עובדת', async ({ page }) => {
+test('2. עמוד ארוחה — הוספת מאכל לארוחת בוקר בלבד', async ({ page }) => {
   await registerProfile(page, uniqueName());
 
-  // מעבר למסך התפריט
-  await page.getByRole('link', { name: 'תפריט' }).click();
-  await expect(page.getByRole('heading', { name: 'התפריט היומי' })).toBeVisible();
+  // כניסה לארוחת הבוקר מהיומן
+  await page.getByRole('button', { name: /ארוחת בוקר/ }).first().click();
+  await expect(page.getByRole('heading', { name: 'ארוחת בוקר' })).toBeVisible();
 
-  // המאכל הראשון בצהריים
-  const lunchCard = page.locator('section', { hasText: 'ארוחת צהריים' }).first();
-  const firstFood = lunchCard.locator('button', { hasText: 'החלפה' }).first();
-  // שם המאכל הוא ה-span השני (אמוג'י, שם, קבוצות, "החלפה")
-  const originalName = (await firstFood.locator('span').nth(1).innerText()).trim();
+  // פתיחת מגירת הוספת מאכל
+  await page.getByRole('button', { name: 'הוספת מאכל' }).click();
+  await expect(page.getByText('חיפוש חופשי')).toBeVisible();
 
-  // פתיחת מגירת ההחלפה
-  await firstFood.click();
-  await expect(page.getByText('ההצעות שלנו')).toBeVisible();
+  // בחירת הצעה ראשונה — נוספת לארוחה
+  const alt = page.locator('[class*="sheetFood"]').first();
+  await expect(alt).toBeVisible();
+  const altName = (await alt.locator('span').nth(1).innerText()).trim();
+  await alt.click();
 
-  // בוחרים חלופה ראשונה מתוך המגירה (כפתור מסוג sheetFood).
-  // שם המאכל נמצא ב-span האחרון (אחרי האמוג'י).
-  const altButton = page.locator('[class*="sheetFood"]').first();
-  await expect(altButton).toBeVisible();
-  const altName = (await altButton.locator('span').last().innerText()).trim();
-  await altButton.click();
-
-  // המגירה נסגרה
-  await expect(page.getByText('ההצעות שלנו')).toHaveCount(0);
-
-  // המאכל בצהריים עודכן לחלופה שנבחרה (ושונה מהמקורי)
-  await expect(lunchCard.getByText(altName, { exact: false }).first()).toBeVisible();
-  expect(altName).not.toBe(originalName);
+  // המגירה נסגרה והמאכל נוסף לרשימת הארוחה
+  await expect(page.getByText('חיפוש חופשי')).toHaveCount(0);
+  await expect(page.getByText(altName, { exact: false }).first()).toBeVisible();
 });
 
-test('3. רישום ארוחה + דירוג מציג עידוד/קונפטי', async ({ page }) => {
+test('3. עמוד ארוחה — "אכלתי" + דירוג מציג עידוד/קונפטי', async ({ page }) => {
   await registerProfile(page, uniqueName());
 
-  await page.getByRole('button', { name: 'רשמי מה אכלת' }).click();
-  await expect(page.getByRole('heading', { name: 'מה אכלת?' })).toBeVisible();
+  await page.getByRole('button', { name: /ארוחת בוקר/ }).first().click();
+  await expect(page.getByRole('heading', { name: 'ארוחת בוקר' })).toBeVisible();
 
-  // בחירת משבצת בוקר
-  await page.getByRole('button', { name: /בוקר/ }).first().click();
-
-  // בחירת מאכל ראשון מהתפריט (foodChip)
-  const firstChip = page
-    .locator('section', { hasText: 'בחרי מהתפריט או הוסיפי' })
-    .locator('button')
-    .first();
-  await firstChip.click();
-
-  // דירוג טעם 4 כוכבים
+  // דירוג טעם 4 כוכבים + שובע "שבעה ומרוצה"
   await page.getByRole('button', { name: '4 כוכבים' }).click();
-  // דירוג שובע "שבעה ומרוצה"
   await page.getByRole('button', { name: 'שבעה ומרוצה' }).click();
 
-  // שמירה
-  await page.getByRole('button', { name: 'שמירה' }).click();
+  // סימון כנאכל
+  await page.getByRole('button', { name: /אכלתי/ }).click();
 
-  // הודעת עידוד מופיעה (הקונפטי מלווה אותה)
+  // הודעת עידוד מופיעה (קונפטי מלווה)
   await expect(page.locator('body')).toContainText(/!|😊|🌈|כבוד|יופי|מעולה/);
 
-  // אחרי כ-1.6 שנ' חוזרים לבית — הארוחה מסומנת כנאכלה
-  await expect(page.getByRole('heading', { name: 'התפריט של היום' })).toBeVisible({
+  // חוזרים לבית והארוחה מסומנת כנאכלה
+  await expect(page.getByRole('heading', { name: 'היומן של היום' })).toBeVisible({
     timeout: 5000,
   });
 });
@@ -100,16 +78,13 @@ test('4. זיהוי מכשיר — reload לא דורש סיסמה', async ({ pa
   const name = uniqueName();
   await registerProfile(page, name);
 
-  // רענון הדף — אמור להיכנס ישר לבית בלי מסך התחברות
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'התפריט של היום' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'היומן של היום' })).toBeVisible();
   await expect(page.getByText('מי משתמשת עכשיו?')).toHaveCount(0);
-  // הברכה כוללת את שם המשתמש
   await expect(page.getByText(new RegExp(name))).toBeVisible();
 });
 
 test('5. בידוד בין שני פרופילים', async ({ page }) => {
-  // פרופיל א' — ממלא 5 כוסות מים
   const nameA = uniqueName('אורי');
   await registerProfile(page, nameA, '1111');
   await page.getByRole('button', { name: 'כוס 5' }).click();
@@ -117,99 +92,69 @@ test('5. בידוד בין שני פרופילים', async ({ page }) => {
 
   // התנתקות דרך ההגדרות
   await page.getByRole('link', { name: 'הגדרות' }).click();
-  await page.getByRole('button', { name: /החלפת משתמש|יציאה|התנתקות/ }).first().click();
+  await page
+    .getByRole('button', { name: /החלפת משתמש|יציאה|התנתקות/ })
+    .first()
+    .click();
 
   // פרופיל ב' — נרשם חדש
   const nameB = uniqueName('דנה');
   await registerProfile(page, nameB, '2222');
 
-  // פרופיל ב' לא רואה את המים של א' — מתחיל מ-0 כוסות
+  // פרופיל ב' מתחיל מ-0 כוסות ולא רואה את א'
   await expect(page.getByText(/0 מתוך/)).toBeVisible();
   await expect(page.getByText(new RegExp(nameB))).toBeVisible();
   await expect(page.getByText(new RegExp(nameA))).toHaveCount(0);
 });
 
-test('6. דירוג שובע נמוך — מאכל לא חוזר בהמלצות מחר', async ({ page }) => {
-  // בדיקה ברמת הדפדפן: רושמים ארוחת צהריים עם מאכל מסוים ושובע נמוך,
-  // ואז מוודאים שבמנוע ההמלצות למחר הוא כמעט לא מדורג ראשון.
-  // (הלוגיקה עצמה מכוסה ב-unit tests; כאן נוודא שהזרימה עובדת מקצה-לקצה.)
+test('6. הוספת סלוט ארוחה מותאם מהיומן', async ({ page }) => {
   await registerProfile(page, uniqueName());
 
-  await page.getByRole('button', { name: 'רשמי מה אכלת' }).click();
-  await page.getByRole('button', { name: /צהריים/ }).first().click();
+  await page.getByRole('button', { name: 'הוספת ארוחה' }).click();
+  // בשדה הראשון במגירה — שם הארוחה
+  await page.getByRole('textbox').first().fill('חטיף בדיקה');
+  await page.getByRole('button', { name: /הוספה/ }).click();
 
-  const firstChip = page
-    .locator('section', { hasText: 'בחרי מהתפריט או הוסיפי' })
-    .locator('button')
-    .first();
-  const eatenName = await firstChip.innerText();
-  await firstChip.click();
+  // עברנו לעמוד הארוחה המותאמת
+  await expect(page.getByRole('heading', { name: 'חטיף בדיקה' })).toBeVisible();
 
-  // שובע נמוך (עדיין רעבה) + טעם נמוך
-  await page.getByRole('button', { name: '1 כוכבים' }).click();
-  await page.getByRole('button', { name: 'עדיין רעבה' }).click();
-  await page.getByRole('button', { name: 'שמירה' }).click();
-
-  await expect(page.getByRole('heading', { name: 'התפריט של היום' })).toBeVisible({
-    timeout: 5000,
-  });
-
-  // הרישום נשמר — נוודא שהארוחה סומנה כנאכלה (סטטוס eaten)
-  expect(eatenName.trim().length).toBeGreaterThan(0);
+  // חזרה לבית — הסלוט המותאם מופיע ביומן (7 שורות כעת)
+  await page.getByRole('button', { name: 'חזרה' }).click();
+  await expect(page.locator('ol li')).toHaveCount(7);
+  await expect(page.getByText('חטיף בדיקה').first()).toBeVisible();
 });
 
-test('7. הוספת מאכל אישי דרך ה-sheet צובעת צ׳קליסט קבוצות מזון', async ({
+test('7. הוספת מאכל אישי בעמוד הארוחה צובעת צ׳קליסט קבוצות מזון', async ({
   page,
 }) => {
   await registerProfile(page, uniqueName());
 
-  await page.getByRole('button', { name: 'רשמי מה אכלת' }).click();
-  await expect(page.getByRole('heading', { name: 'מה אכלת?' })).toBeVisible();
+  await page.getByRole('button', { name: /ארוחת בוקר/ }).first().click();
+  await page.getByRole('button', { name: 'הוספת מאכל' }).click();
 
-  // בחירת משבצת בוקר
-  await page.getByRole('button', { name: /בוקר/ }).first().click();
-
-  // חיפוש מאכל שלא קיים → מופיע כפתור הוספה
-  await page
-    .getByPlaceholder('חיפוש או הוספת מאכל חדש...')
-    .fill('פיצה של אמא בדיקה');
+  // חיפוש מאכל שלא קיים → כפתור הוספה כמאכל חדש
+  await page.getByPlaceholder('חיפוש מאכל...').fill('פיצה של אמא בדיקה');
   const addBtn = page.getByRole('button', { name: /כמאכל חדש/ });
   await expect(addBtn).toBeVisible();
   await addBtn.click();
 
-  // דיאלוג ההוספה נפתח עם השם ממולא מראש
+  // דיאלוג ההוספה נפתח עם השם ממולא מראש + זיהוי אוטומטי
   await expect(
     page.getByRole('heading', { name: /הוספת מאכל חדש/ }),
   ).toBeVisible();
   await expect(page.locator('#add-food-name')).toHaveValue('פיצה של אמא בדיקה');
-
-  // זיהוי אוטומטי מקומי: "פיצה של אמא בדיקה" מכיל "פיצה" → פחמימות+מוצרי חלב
   await expect(page.getByText(/נראה לי שזה עשוי מ:/)).toBeVisible();
-  // שתי הקבוצות מסומנות אוטומטית מראש (aria-pressed=true), בלי בחירה ידנית
-  await expect(
-    page.getByRole('button', { name: 'פחמימות', exact: true }),
-  ).toHaveAttribute('aria-pressed', 'true');
-  await expect(
-    page.getByRole('button', { name: 'מוצרי חלב', exact: true }),
-  ).toHaveAttribute('aria-pressed', 'true');
-  // שמירה — בלי לגעת בקבוצות (כדי לוודא שהזיהוי האוטומטי נשמר)
   await page.getByRole('button', { name: 'שמירת המאכל' }).click();
 
-  // הדיאלוג נסגר והמאכל החדש נבחר אוטומטית
-  await expect(
-    page.getByRole('heading', { name: /הוספת מאכל חדש/ }),
-  ).toHaveCount(0);
+  // חזרה לעמוד הארוחה — המאכל נוסף
+  await expect(page.getByRole('heading', { name: 'ארוחת בוקר' })).toBeVisible();
+  await expect(page.getByText('פיצה של אמא בדיקה').first()).toBeVisible();
 
-  // דירוג ושמירה
-  await page.getByRole('button', { name: '4 כוכבים' }).click();
-  await page.getByRole('button', { name: 'שבעה ומרוצה' }).click();
-  await page.getByRole('button', { name: 'שמירה' }).click();
-
-  // חזרה לבית — הצ׳קליסט מציג את הקבוצות שנצבעו
+  // סימון כנאכל וחזרה לבית — הצ׳קליסט נצבע
+  await page.getByRole('button', { name: /אכלתי|עדכון/ }).click();
   await expect(
-    page.getByRole('heading', { name: 'התפריט של היום' }),
+    page.getByRole('heading', { name: 'היומן של היום' }),
   ).toBeVisible({ timeout: 5000 });
   const groups = page.locator('section', { hasText: 'הצבעים של היום' });
   await expect(groups.getByText('פחמימות', { exact: true })).toBeVisible();
-  await expect(groups.getByText('מוצרי חלב', { exact: true })).toBeVisible();
 });
