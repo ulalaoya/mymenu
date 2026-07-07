@@ -33,4 +33,13 @@ export {
   FoodGroups,
   Bowl,
   Save,
+  Watermelon,
+  Melon,
+  Peach,
+  Grapes,
+  Orange,
+  Banana,
+  Plum,
+  Apple,
+  Sip,
 } from './icons';

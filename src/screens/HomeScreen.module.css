@@ -2,6 +2,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  /* גוונים רכים לרקעים, נגזרים מהצבע הנבחר ומצבע ה"הוספה" */
+  --accent-soft: color-mix(in srgb, var(--accent, var(--blue)) 16%, #fff);
+  --add-soft: color-mix(in srgb, var(--add-accent, var(--coral)) 18%, #fff);
 }
 
 .header {
@@ -28,16 +31,13 @@
   font-size: 17px;
 }
 
-/* אווטאר הפרופיל אחרי השם — צבוע בצבע שנבחר בהגדרות */
+/* אווטאר הפרופיל אחרי השם — נשאר בצבעים המקוריים שלו (ללא מילוי צבע) */
 .avatarChip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--radius-pill);
-  font-size: 17px;
-  box-shadow: var(--shadow-card);
+  font-size: 22px;
+  line-height: 1;
 }
 
 .cardTitle {
@@ -61,8 +61,8 @@
   min-height: 38px;
   padding: 0 var(--space-3);
   border-radius: var(--radius-pill);
-  background: var(--blue-light);
-  color: var(--blue);
+  background: var(--accent-soft, var(--blue-light));
+  color: var(--accent, var(--blue));
   font-size: 14px;
   font-weight: var(--fw-medium);
 }
@@ -145,7 +145,7 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-pill);
-  background: var(--blue-light);
+  background: var(--accent-soft, var(--blue-light));
   flex-shrink: 0;
 }
 
@@ -321,8 +321,8 @@
   margin-top: var(--space-3);
   min-height: var(--touch-min);
   border-radius: var(--radius-pill);
-  background: var(--coral-light);
-  color: var(--coral);
+  background: var(--add-soft, var(--coral-light));
+  color: var(--add-accent, var(--coral));
   font-weight: var(--fw-medium);
   font-size: 15px;
 }

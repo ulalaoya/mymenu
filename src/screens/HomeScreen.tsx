@@ -1,5 +1,6 @@
 // ===== מסך הבית — יומן האכילה היומי הדינמי (SPEC 6.2, מיזוג 6.3+6.4) =====
 import { useEffect, useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAuth } from '../hooks/useAuth';
@@ -24,8 +25,8 @@ import {
   FOOD_GROUP_COLORS,
   SLOT_ICONS,
   greetingForHour,
-  greetingEmoji,
 } from '../utils/menuDisplay';
+import { PROFILE_COLORS } from '../db/constants';
 import { BottomSheet } from '../components/BottomSheet';
 import {
   Sparkle,
@@ -36,6 +37,16 @@ import {
   Refresh,
 } from '../components/icons';
 import styles from './HomeScreen.module.css';
+
+/**
+ * צבע ה"הוספת ארוחה" — הצבע הבא במחזור הפלטה (לא הצבע הנבחר):
+ * כחול→אלמוגי, אלמוגי→צהוב, צהוב→ירוק, ירוק→כחול.
+ */
+function nextPaletteColor(color: string): string {
+  const i = (PROFILE_COLORS as readonly string[]).indexOf(color);
+  if (i === -1) return PROFILE_COLORS[1];
+  return PROFILE_COLORS[(i + 1) % PROFILE_COLORS.length];
+}
 
 /** תאריך היום בעברית ידידותית (יום בשבוע + יום + חודש) */
 function prettyToday(): string {
@@ -168,11 +179,17 @@ export function HomeScreen() {
     if (id) navigate(`/meal/${id}`);
   }
 
-  // צבע הפרופיל שנבחר בהגדרות — צובע את עמוד הבית (כותרת, אווטאר, אייקונים)
+  // צבע הפרופיל שנבחר בהגדרות — צובע את הבית (כותרת, אייקונים, רקעי עיגולים).
+  // צבע ה"הוספת ארוחה" הוא הצבע הבא במחזור (שונה מהנבחר).
   const accent = profile?.color ?? 'var(--blue)';
+  const addAccent = profile ? nextPaletteColor(profile.color) : 'var(--coral)';
+  const themeVars = {
+    ['--accent']: accent,
+    ['--add-accent']: addAccent,
+  } as CSSProperties;
 
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} style={themeVars}>
       <header className={styles.header}>
         <h1 className={styles.logo} style={{ color: accent }}>
           MyMenu <Sparkle size={26} color={accent} />
@@ -180,14 +197,8 @@ export function HomeScreen() {
         <p className={styles.greeting}>
           {greetingForHour(hour)}, {profile?.username}
           {profile && (
-            <span
-              className={styles.avatarChip}
-              style={{ background: profile.color }}
-            >
-              {profile.avatar}
-            </span>
+            <span className={styles.avatarChip}>{profile.avatar}</span>
           )}
-          {greetingEmoji(hour)}
         </p>
         <p className={styles.dateText}>{prettyToday()}</p>
       </header>
@@ -234,7 +245,7 @@ export function HomeScreen() {
                   onClick={() => navigate(`/meal/${s.key}`)}
                 >
                   <span className={styles.mealIcon}>
-                    <Icon size={24} />
+                    <Icon size={24} color={accent} />
                   </span>
                   <span className={styles.mealBody}>
                     <span className={styles.mealName}>{s.label}</span>
@@ -271,7 +282,7 @@ export function HomeScreen() {
             setAddOpen(true);
           }}
         >
-          <Add size={20} color="var(--coral)" />
+          <Add size={20} color="var(--add-accent)" />
           הוספת ארוחה
         </button>
       </section>

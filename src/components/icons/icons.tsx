@@ -330,3 +330,112 @@ export function Save({ size = 24, color, ...p }: IconProps) {
     </IconBase>
   );
 }
+
+// ===== אייקוני פירות + שלוק (line-icons בסגנון MyMenu) =====
+
+/** אבטיח 🍉 — פלח עם גרעינים */
+export function Watermelon({ size = 24, color, ...p }: IconProps) {
+  return (
+    <IconBase size={size} color={color} {...p}>
+      <path d="M4 8h16" />
+      <path d="M4 8a8 8 0 0 0 16 0" />
+      <path d="M4.4 9.6h15.2" stroke={CORAL} />
+      <circle cx="9" cy="11.5" r="0.7" fill={CORAL} stroke="none" />
+      <circle cx="12" cy="13.2" r="0.7" fill={CORAL} stroke="none" />
+      <circle cx="15" cy="11.5" r="0.7" fill={CORAL} stroke="none" />
+    </IconBase>
+  );
+}
+
+/** מלון 🍈 — חצוי עם גרעינים */
+export function Melon({ size = 24, color, ...p }: IconProps) {
+  return (
+    <IconBase size={size} color={color} {...p}>
+      <path d="M12 4.5c4.5 0 7.5 3.6 7.5 8s-3 7-7.5 7-7.5-2.6-7.5-7 3-8 7.5-8Z" />
+      <path d="M12 4.5v14" stroke={CORAL} />
+      <circle cx="9.4" cy="12" r="0.6" fill={CORAL} stroke="none" />
+      <circle cx="14.6" cy="12" r="0.6" fill={CORAL} stroke="none" />
+    </IconBase>
+  );
+}
+
+/** אפרסק 🍑 — עם עלה */
+export function Peach({ size = 24, color, ...p }: IconProps) {
+  return (
+    <IconBase size={size} color={color} {...p}>
+      <path d="M12 7.5c-3.1 0-5.4 2.3-5.4 5.8S9 19 12 19s5.4-2.2 5.4-5.7S15.1 7.5 12 7.5Z" />
+      <path d="M12 8v10.5" stroke={CORAL} />
+      <path d="M12 8c.4-2 2.1-3.1 4-2.9-.2 1.9-1.6 3.1-3.5 3.3" fill={YELLOW} stroke="none" />
+    </IconBase>
+  );
+}
+
+/** ענבים 🍇 — אשכול עם עלה */
+export function Grapes({ size = 24, color, ...p }: IconProps) {
+  return (
+    <IconBase size={size} color={color} {...p}>
+      <circle cx="9" cy="12" r="1.7" />
+      <circle cx="12.4" cy="12" r="1.7" />
+      <circle cx="15.8" cy="12" r="1.7" />
+      <circle cx="10.7" cy="15.2" r="1.7" />
+      <circle cx="14.1" cy="15.2" r="1.7" />
+      <circle cx="12.4" cy="18.2" r="1.7" />
+      <path d="M12.4 9.8V6" stroke={CORAL} />
+      <path d="M12.4 6c1-1.6 2.7-1.9 4-1.5-.2 1.5-1.5 2.5-3.1 2.5" fill={YELLOW} stroke="none" />
+    </IconBase>
+  );
+}
+
+/** תפוז 🍊 — פרי הדר עם פלחים */
+export function Orange({ size = 24, color, ...p }: IconProps) {
+  return (
+    <IconBase size={size} color={color} {...p}>
+      <circle cx="12" cy="12.5" r="7.5" />
+      <path d="M12 12.5V5M12 12.5l6.4 4M12 12.5l-6.4 4" stroke={CORAL} />
+      <path d="M12 5c.5-1.2 1.8-1.7 3-1.4" stroke={YELLOW} />
+    </IconBase>
+  );
+}
+
+/** בננה 🍌 — סהר */
+export function Banana({ size = 24, color, ...p }: IconProps) {
+  return (
+    <IconBase size={size} color={color} {...p}>
+      <path d="M19 16.4c-6.2 1.6-11.7-2.6-11.7-9.2 0-.7.1-1.4.3-2-1 .4-1.5 1.4-1.5 2.8 0 6.1 5.1 10.6 11.2 9.6.6-.1 1.2-.4 1.7-.7Z" />
+      <path d="M19 16.4l1.3-.5" stroke={CORAL} />
+    </IconBase>
+  );
+}
+
+/** שזיף 🫐 — פרי חצוי עם עלה */
+export function Plum({ size = 24, color, ...p }: IconProps) {
+  return (
+    <IconBase size={size} color={color} {...p}>
+      <path d="M12 6.5c-3.3 0-5.5 2.6-5.5 6.2S9 19 12 19s5.5-2.7 5.5-6.3S15.3 6.5 12 6.5Z" />
+      <path d="M12 7v11.5" stroke={CORAL} />
+      <path d="M12 7c.3-1.7 1.7-2.7 3.3-2.6-.1 1.6-1.4 2.6-2.9 2.7" fill={CORAL} stroke="none" />
+    </IconBase>
+  );
+}
+
+/** תפוח 🍎 — עם עלה */
+export function Apple({ size = 24, color, ...p }: IconProps) {
+  return (
+    <IconBase size={size} color={color} {...p}>
+      <path d="M12 8c-1-1.1-2.7-1.5-4.1-.8-2 .9-2.7 3.7-1.6 6.5C7.1 15.8 9 18.5 12 18.5s4.9-2.7 5.7-4.8c1.1-2.8.4-5.6-1.6-6.5-1.4-.7-3.1-.3-4.1.8Z" />
+      <path d="M12 8V5" stroke={CORAL} />
+      <path d="M12.6 6c.8-1.3 2.2-1.8 3.5-1.5-.2 1.3-1.5 2.2-3 2.2" fill={YELLOW} stroke="none" />
+    </IconBase>
+  );
+}
+
+/** שלוק 🥤 — כוס עם קשית */
+export function Sip({ size = 24, color, ...p }: IconProps) {
+  return (
+    <IconBase size={size} color={color} {...p}>
+      <path d="M7 8h10l-1 10.6a1.5 1.5 0 0 1-1.5 1.4H9.5A1.5 1.5 0 0 1 8 18.6L7 8Z" />
+      <path d="M8.7 12h6.6" stroke={CORAL} />
+      <path d="M13 8l3.2-4" stroke={CORAL} />
+    </IconBase>
+  );
+}
