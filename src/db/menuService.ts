@@ -223,6 +223,22 @@ export async function reshuffleTodayMenu(
   return menu;
 }
 
+/**
+ * מאפס את יומן היום: מסיר את כל המאכלים מכל הארוחות (הקבועות, המותאמות
+ * והממתק), ומשאיר את מבנה הארוחות והשעות כך שאפשר להוסיף מאכלים מאפס.
+ * אינו מוחק רישומי "נאכל" (mealLogs) — רק את התוכנן.
+ */
+export async function clearTodayMenu(
+  menuId: string,
+): Promise<Menu | undefined> {
+  return mutateMenu(menuId, (menu) => ({
+    ...menu,
+    slots: menu.slots.map((s) => ({ ...s, foodIds: [], quantities: {} })),
+    sweetFoodId: undefined,
+    sweetQuantity: undefined,
+  }));
+}
+
 /** קלט לרישום ארוחה */
 export interface LogMealInput {
   profileId: string;

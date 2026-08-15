@@ -10,7 +10,7 @@ import {
   getOrCreateTodayMenu,
   getWaterCups,
   setWaterCups,
-  reshuffleTodayMenu,
+  clearTodayMenu,
   getDiarySlots,
   setSlotTime,
   addCustomSlot,
@@ -69,6 +69,7 @@ export function HomeScreen() {
   const hour = new Date().getHours();
 
   const [busy, setBusy] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [newLabel, setNewLabel] = useState('');
   const [newTime, setNewTime] = useState(() => toTimeString());
@@ -159,13 +160,14 @@ export function HomeScreen() {
     await setWaterCups(profile.id, date, next);
   }
 
-  async function doReshuffle() {
-    if (!profile) return;
+  async function confirmReset() {
+    if (!menu) return;
     setBusy(true);
     try {
-      await reshuffleTodayMenu(profile, date);
+      await clearTodayMenu(menu.id);
     } finally {
       setBusy(false);
+      setResetOpen(false);
     }
   }
 
@@ -212,12 +214,12 @@ export function HomeScreen() {
           <button
             type="button"
             className={styles.suggestBtn}
-            onClick={doReshuffle}
+            onClick={() => setResetOpen(true)}
             disabled={busy}
-            aria-label="הצעה חדשה"
+            aria-label="איפוס היומן"
           >
             <Refresh size={18} color="var(--blue)" />
-            הצעה חדשה
+            איפוס
           </button>
         </div>
 
@@ -400,6 +402,33 @@ export function HomeScreen() {
           onClick={confirmAddMeal}
         >
           הוספה ✨
+        </button>
+      </BottomSheet>
+
+      {/* ===== אישור איפוס היומן ===== */}
+      <BottomSheet
+        open={resetOpen}
+        title="לאפס את היומן של היום?"
+        onClose={() => setResetOpen(false)}
+      >
+        <p className={styles.resetText}>
+          כל המאכלים יימחקו מכל הארוחות (השעות יישארו), כדי שתוכלי להוסיף בעצמך
+          את מה שאכלת. הסימונים "נאכל" והמים לא יושפעו.
+        </p>
+        <button
+          type="button"
+          className={styles.addConfirm}
+          onClick={confirmReset}
+          disabled={busy}
+        >
+          כן, מאפסים 🧹
+        </button>
+        <button
+          type="button"
+          className={styles.resetCancel}
+          onClick={() => setResetOpen(false)}
+        >
+          ביטול
         </button>
       </BottomSheet>
     </div>

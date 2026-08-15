@@ -368,6 +368,23 @@
   font-size: 17px;
 }
 
+.resetText {
+  color: var(--text-soft);
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: var(--space-4);
+}
+
+.resetCancel {
+  width: 100%;
+  min-height: 48px;
+  margin-top: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--text-soft);
+  font-weight: var(--fw-medium);
+}
+
 /* ===== כפתור צף (לא בשימוש כרגע) ===== */
 .fab {
   position: fixed;
