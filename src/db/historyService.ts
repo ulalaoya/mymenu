@@ -38,21 +38,26 @@ export interface DayCell {
    * 0=ריק, 1=מעט, 2=חלקי, 3=כמעט מלא, 4=יום מלא (כל הארוחות + מספיק מים).
    */
   completeness: 0 | 1 | 2 | 3 | 4;
-  /** יום מעולה: הרבה ירקות + שתיית מים טובה — מסומן בכוכבית */
+  /** יום מעולה: 4 מנות ירק/פרי + כל כוסות המים — מסומן בכוכבית */
   star: boolean;
 }
 
-/** מספר מאכלי הירקות המינימלי ביום כדי שייחשב "עמוס בירקות" */
-export const EXCELLENT_VEGGIE_MIN = 2;
-/** כוסות המים המינימליות ביום כדי שייחשב "שתיית מים טובה" */
-export const EXCELLENT_WATER_MIN = 6;
+/** מספר מנות הירק/פרי המינימלי ביום כדי שייחשב "יום מעולה" */
+export const EXCELLENT_PRODUCE_MIN = 4;
+/** כוסות המים הנדרשות ליום מעולה (יעד המים המלא) */
+export const EXCELLENT_WATER_MIN = WATER_GOAL_CUPS;
 
 /**
- * יום מעולה (כוכבית): נאכלו לפחות EXCELLENT_VEGGIE_MIN מאכלי ירקות שונים
- * ונשתו לפחות EXCELLENT_WATER_MIN כוסות מים. חוויה חיובית — סימון הצטיינות.
+ * יום מעולה (כוכבית): נאכלו לפחות EXCELLENT_PRODUCE_MIN מנות של ירקות ו/או
+ * פירות (בכל שילוב) ונשתו כל כוסות המים (EXCELLENT_WATER_MIN). חוויה חיובית.
  */
-export function isExcellentDay(veggieFoods: number, waterCups: number): boolean {
-  return veggieFoods >= EXCELLENT_VEGGIE_MIN && waterCups >= EXCELLENT_WATER_MIN;
+export function isExcellentDay(
+  produceServings: number,
+  waterCups: number,
+): boolean {
+  return (
+    produceServings >= EXCELLENT_PRODUCE_MIN && waterCups >= EXCELLENT_WATER_MIN
+  );
 }
 
 /** לוח שנה חודשי מלא */
@@ -119,18 +124,19 @@ export async function getMonthCalendar(
   // כמה משבצות שונות נרשמו לכל יום (ארוחה שנרשמה פעמיים נספרת פעם אחת).
   // סופרים לפי מפתח הסלוט (כולל סלוטים מותאמים) כדי לא לאחד ארוחות שונות.
   const slotsByDate = new Map<string, Set<string>>();
-  // מאכלי ירקות שונים שנאכלו בכל יום (לסימון "יום מעולה")
-  const veggiesByDate = new Map<string, Set<string>>();
+  // מנות ירק/פרי שנאכלו בכל יום (כל הופעה נספרת — לסימון "יום מעולה")
+  const produceByDate = new Map<string, number>();
   for (const log of logs) {
     const set = slotsByDate.get(log.date) ?? new Set<string>();
     set.add(log.slotId ?? log.slot);
     slotsByDate.set(log.date, set);
 
-    const veg = veggiesByDate.get(log.date) ?? new Set<string>();
+    let produce = produceByDate.get(log.date) ?? 0;
     for (const id of log.foodIds) {
-      if (foodsById.get(id)?.foodGroups.includes('ירקות')) veg.add(id);
+      const groups = foodsById.get(id)?.foodGroups ?? [];
+      if (groups.includes('ירקות') || groups.includes('פירות')) produce++;
     }
-    veggiesByDate.set(log.date, veg);
+    produceByDate.set(log.date, produce);
   }
   const waterByDate = new Map<string, number>();
   for (const w of waters) waterByDate.set(w.date, w.cups);
@@ -140,14 +146,14 @@ export async function getMonthCalendar(
     const date = dateStr(year, month, d);
     const mealsLogged = slotsByDate.get(date)?.size ?? 0;
     const waterCups = waterByDate.get(date) ?? 0;
-    const veggieFoods = veggiesByDate.get(date)?.size ?? 0;
+    const produceServings = produceByDate.get(date) ?? 0;
     days.push({
       date,
       day: d,
       mealsLogged,
       waterCups,
       completeness: computeCompleteness(mealsLogged, waterCups),
-      star: isExcellentDay(veggieFoods, waterCups),
+      star: isExcellentDay(produceServings, waterCups),
     });
   }
 

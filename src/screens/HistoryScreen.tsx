@@ -189,7 +189,7 @@ export function HistoryScreen() {
                 }
                 aria-label={
                   cell.star
-                    ? `${cell.day} — יום מעולה, הרבה ירקות ומים`
+                    ? `${cell.day} — יום מעולה, הרבה ירק ופרי ומים`
                     : `${cell.day} — ${cell.mealsLogged} ארוחות`
                 }
               >
@@ -208,7 +208,9 @@ export function HistoryScreen() {
           <span className={`${styles.legendDot} ${styles.c4}`} />
           <span className={styles.legendText}>יום מלא - כל הכבוד!</span>
           <span className={styles.legendStar}>⭐</span>
-          <span className={styles.legendText}>יום מעולה (הרבה ירקות ומים)</span>
+          <span className={styles.legendText}>
+            יום מעולה (4 מנות ירק/פרי + 8 כוסות מים)
+          </span>
         </div>
       </section>
 
