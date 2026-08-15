@@ -3,6 +3,7 @@
 // אינו משכפל לוגיקת מנוע — עוטף אותה ומוסיף קריאה/כתיבה ל-DB בלבד.
 
 import type {
+  FoodQuantity,
   FoodStats,
   MealLog,
   MealSlot,
@@ -22,7 +23,13 @@ import {
   loadFoodStats,
   type FoodStatsComputed,
 } from '../engine';
-import { DAY_SLOTS, SLOT_LABELS, DEFAULT_QUANTITY } from '../utils/menuDisplay';
+import {
+  DAY_SLOTS,
+  SLOT_LABELS,
+  DEFAULT_AMOUNT,
+  DEFAULT_UNIT,
+  normalizeQuantity,
+} from '../utils/menuDisplay';
 import { timeToMinutes } from '../utils/date';
 
 /** מפתח הסלוט של הממתק היומי ביומן */
@@ -53,6 +60,22 @@ function subtractDays(date: string, days: number): string {
 /** מזהה ייחודי */
 function newId(): string {
   return crypto.randomUUID();
+}
+
+/** כמות ברירת המחדל למאכל שנוסף (1 יחידות) */
+function defaultQuantity(): FoodQuantity {
+  return { amount: DEFAULT_AMOUNT, unit: DEFAULT_UNIT };
+}
+
+/** מנרמל מפת כמויות שלמה (foodId → כמות) לצורה אחידה, כולל נתונים ישנים */
+function normalizeQuantities(
+  raw?: Record<string, FoodQuantity>,
+): Record<string, FoodQuantity> {
+  const out: Record<string, FoodQuantity> = {};
+  for (const [id, q] of Object.entries(raw ?? {})) {
+    out[id] = normalizeQuantity(q);
+  }
+  return out;
 }
 
 /** ממיר מפת FoodStats (מה-DB) למפת FoodStatsComputed שהמנוע מצפה לה */
@@ -298,8 +321,8 @@ export interface DiarySlot {
   /** תווית תצוגה */
   label: string;
   foodIds: string[];
-  /** כמות פר-מאכל (foodId → תווית כמות). מאכל ללא רשומה = "1" */
-  quantities: Record<string, string>;
+  /** כמות פר-מאכל (foodId → כמות+יחידה), מנורמלת. מאכל ללא רשומה = ברירת מחדל */
+  quantities: Record<string, FoodQuantity>;
   plannedTime: string;
   /** סלוט שהמשתמשת הוסיפה ידנית */
   custom: boolean;
@@ -326,7 +349,7 @@ export function getDiarySlots(menu: Menu, profile: Profile): DiarySlot[] {
       slot,
       label: SLOT_LABELS[slot],
       foodIds: ms?.foodIds ?? [],
-      quantities: ms?.quantities ?? {},
+      quantities: normalizeQuantities(ms?.quantities),
       plannedTime: ms?.plannedTime || profile.mealTimes[slot] || '',
       custom: false,
       isSweet: false,
@@ -339,7 +362,7 @@ export function getDiarySlots(menu: Menu, profile: Profile): DiarySlot[] {
     label: SLOT_LABELS['ממתק'],
     foodIds: menu.sweetFoodId ? [menu.sweetFoodId] : [],
     quantities: menu.sweetFoodId
-      ? { [menu.sweetFoodId]: menu.sweetQuantity ?? DEFAULT_QUANTITY }
+      ? { [menu.sweetFoodId]: normalizeQuantity(menu.sweetQuantity) }
       : {},
     plannedTime:
       menu.sweetTime || profile.mealTimes['ממתק'] || DEFAULT_SWEET_TIME,
@@ -352,7 +375,7 @@ export function getDiarySlots(menu: Menu, profile: Profile): DiarySlot[] {
     slot: s.slot,
     label: s.label || SLOT_LABELS[s.slot],
     foodIds: s.foodIds,
-    quantities: s.quantities ?? {},
+    quantities: normalizeQuantities(s.quantities),
     plannedTime: s.plannedTime,
     custom: true,
     isSweet: false,
@@ -423,7 +446,7 @@ export async function addFoodToSlot(
   menuId: string,
   key: string,
   foodId: string,
-  quantity: string = DEFAULT_QUANTITY,
+  quantity: FoodQuantity = defaultQuantity(),
 ): Promise<Menu | undefined> {
   if (key === SWEET_KEY) {
     return mutateMenu(menuId, (menu) => ({
@@ -445,12 +468,12 @@ export async function addFoodToSlot(
   }));
 }
 
-/** מעדכן את הכמות של מאכל קיים בסלוט */
+/** מעדכן את הכמות (כמות+יחידה) של מאכל קיים בסלוט */
 export async function setFoodQuantity(
   menuId: string,
   key: string,
   foodId: string,
-  quantity: string,
+  quantity: FoodQuantity,
 ): Promise<Menu | undefined> {
   if (key === SWEET_KEY) {
     return mutateMenu(menuId, (menu) => ({ ...menu, sweetQuantity: quantity }));
@@ -556,8 +579,8 @@ export interface LogSlotInput {
   slot: MealSlot;
   slotLabel?: string;
   foodIds: string[];
-  /** כמות פר-מאכל (foodId → תווית כמות) */
-  quantities?: Record<string, string>;
+  /** כמות פר-מאכל (foodId → כמות+יחידה) */
+  quantities?: Record<string, FoodQuantity>;
   plannedTime: string;
   tasteRating?: TasteRating;
   satietyRating?: SatietyRating;

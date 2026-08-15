@@ -6,6 +6,7 @@
 import type {
   FoodGroup,
   FoodItem,
+  FoodQuantity,
   MealLog,
   Menu,
   SatietyRating,
@@ -14,7 +15,7 @@ import type {
 import { db } from './database';
 import { getProfileFoods } from './foodRepo';
 import { markWinnerMenus } from '../engine';
-import { DAY_SLOTS } from '../utils/menuDisplay';
+import { DAY_SLOTS, formatQuantity } from '../utils/menuDisplay';
 import { WATER_GOAL_CUPS } from './menuService';
 
 /** מספר המשבצות (ארוחות) ביום — לחישוב שלמות רישום (ללא הממתק) */
@@ -135,7 +136,7 @@ export interface DayMealEntry {
   foodNames: string[];
   /** אימוג'ים תואמים */
   foodEmojis: string[];
-  /** כמויות תואמות (foodId → תווית כמות; "" אם ברירת מחדל) */
+  /** כמויות מעוצבות לתצוגה (למשל "3 כפות"; "" אם ברירת מחדל) */
   foodQuantities: string[];
   eatenAt: number;
   tasteRating?: TasteRating;
@@ -176,7 +177,7 @@ export async function getDayDetails(
     .map((log) => {
       const items = log.foodIds
         .map((id) => ({ food: foodsById.get(id), q: log.quantities?.[id] }))
-        .filter((e): e is { food: FoodItem; q: string | undefined } =>
+        .filter((e): e is { food: FoodItem; q: FoodQuantity | undefined } =>
           Boolean(e.food),
         );
       return {
@@ -184,7 +185,7 @@ export async function getDayDetails(
         slotLabel: log.slotLabel,
         foodNames: items.map((e) => e.food.name),
         foodEmojis: items.map((e) => e.food.emoji),
-        foodQuantities: items.map((e) => e.q ?? ''),
+        foodQuantities: items.map((e) => formatQuantity(e.q)),
         eatenAt: log.eatenAt,
         tasteRating: log.tasteRating,
         satietyRating: log.satietyRating,

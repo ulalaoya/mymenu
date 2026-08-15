@@ -16,7 +16,7 @@ import {
   type WeeklyVariety,
 } from '../db/historyService';
 import { todayString } from '../utils/date';
-import { SLOT_LABELS, SATIETY_FACES, formatQuantity } from '../utils/menuDisplay';
+import { SLOT_LABELS, SATIETY_FACES } from '../utils/menuDisplay';
 import { BottomSheet } from '../components/BottomSheet';
 import { FoodSymbol } from '../components/FoodSymbol';
 import {
@@ -328,7 +328,7 @@ export function HistoryScreen() {
               </div>
               <div className={styles.dayMealFoods}>
                 {m.foodEmojis.map((e, k) => {
-                  const qty = formatQuantity(m.foodQuantities[k]);
+                  const qty = m.foodQuantities[k];
                   return (
                     <span key={k} className={styles.dayFood}>
                       <FoodSymbol symbol={e} size={16} /> {m.foodNames[k]}

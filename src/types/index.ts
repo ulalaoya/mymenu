@@ -20,6 +20,14 @@ export type FoodGroup =
   | 'שומנים בריאים'
   | 'מתוקים';
 
+/** כמות מאכל בארוחה: מספר (או "חצי") + יחידת מדידה (כפות/כוסות/גרם...) */
+export interface FoodQuantity {
+  /** הכמות: "חצי" או "1".."10" */
+  amount: string;
+  /** יחידת המדידה: יחידות/כפות/כוסות/פרוסות/חבילות/גרם או יחידה שהמשתמשת הוסיפה */
+  unit: string;
+}
+
 /** פריט מזון במאגר */
 export interface FoodItem {
   id: string;
@@ -58,8 +66,8 @@ export interface Profile {
 export interface MenuSlot {
   slot: MealSlot;
   foodIds: string[];
-  /** כמות פר-מאכל (foodId → תווית כמות, למשל "3" / "חופן" / "כוס"). ברירת מחדל "1" */
-  quantities?: Record<string, string>;
+  /** כמות פר-מאכל (foodId → כמות+יחידה). מאכל ללא רשומה = כמות ברירת מחדל */
+  quantities?: Record<string, FoodQuantity>;
   plannedTime: string;
   /** מזהה ייחודי לסלוט מותאם שהמשתמשת הוסיפה (סלוטים קבועים: undefined) */
   id?: string;
@@ -77,8 +85,8 @@ export interface Menu {
   date: string;
   slots: MenuSlot[];
   sweetFoodId?: string;
-  /** כמות הממתק היומי (ברירת מחדל "1") */
-  sweetQuantity?: string;
+  /** כמות הממתק היומי (כמות+יחידה) */
+  sweetQuantity?: FoodQuantity;
   /** שעת הממתק היומי (ניתנת לעדכון פר-יום, כמו שאר הסלוטים) */
   sweetTime?: string;
   overallRating?: number;
@@ -104,8 +112,8 @@ export interface MealLog {
   /** תווית תצוגה של סלוט מותאם (למקרה שאין שם משבצת קבוע) */
   slotLabel?: string;
   foodIds: string[];
-  /** כמות פר-מאכל שנרשמה (foodId → תווית כמות). ברירת מחדל "1" */
-  quantities?: Record<string, string>;
+  /** כמות פר-מאכל שנרשמה (foodId → כמות+יחידה) */
+  quantities?: Record<string, FoodQuantity>;
   /** timestamp של שעת האכילה */
   eatenAt: number;
   tasteRating?: TasteRating;

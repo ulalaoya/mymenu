@@ -29,25 +29,30 @@ import {
 } from '../engine';
 import type {
   FoodItem,
+  FoodQuantity,
   FoodStats,
   SatietyRating,
-  TasteRating,
 } from '../types';
 import { todayString } from '../utils/date';
 import {
   SLOT_ICONS,
   FOOD_GROUP_COLORS,
   SATIETY_FACES,
-  MOODS,
-  QUANTITY_OPTIONS,
-  DEFAULT_QUANTITY,
+  AMOUNT_OPTIONS,
+  BUILTIN_UNIT_OPTIONS,
+  DEFAULT_AMOUNT,
+  DEFAULT_UNIT,
   randomEncouragement,
 } from '../utils/menuDisplay';
+import { getCustomUnits, addCustomUnit } from '../utils/units';
 import { BottomSheet } from '../components/BottomSheet';
 import { AddFoodSheet } from '../components/AddFoodSheet';
 import { FoodSymbol } from '../components/FoodSymbol';
 import { Confetti } from '../components/Confetti';
-import { StarFilled, StarEmpty, Add, Sparkle } from '../components/icons';
+import { Add, Sparkle } from '../components/icons';
+
+/** ערך-דגל בבורר היחידה לפתיחת הוספת יחידה חדשה */
+const ADD_UNIT_VALUE = '__add_unit__';
 import styles from './MealScreen.module.css';
 
 function toComputed(raw: Map<string, FoodStats>): Map<string, FoodStatsComputed> {
@@ -67,15 +72,28 @@ export function MealScreen() {
   const { key = '' } = useParams();
   const date = todayString();
 
-  const [taste, setTaste] = useState<TasteRating | 0>(0);
   const [satiety, setSatiety] = useState<SatietyRating | 0>(0);
-  const [mood, setMood] = useState<string>('');
   const [addOpen, setAddOpen] = useState(false);
   const [addCustomOpen, setAddCustomOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [alternatives, setAlternatives] = useState<FoodItem[]>([]);
   const [celebrate, setCelebrate] = useState<string | null>(null);
   const [ratingsLoaded, setRatingsLoaded] = useState(false);
+  // יחידות מדידה מותאמות שהמשתמשת הוסיפה (נטענות מ-localStorage)
+  const [customUnits, setCustomUnits] = useState<string[]>([]);
+  // המאכל שעבורו פתוחה כרגע הוספת יחידה חדשה, והטקסט שהוקלד
+  const [addingUnitFor, setAddingUnitFor] = useState<string | null>(null);
+  const [newUnit, setNewUnit] = useState('');
+
+  useEffect(() => {
+    setCustomUnits(getCustomUnits());
+  }, []);
+
+  // רשימת היחידות לבורר: המובנות + המותאמות (ללא כפילויות)
+  const unitOptions = useMemo(
+    () => Array.from(new Set([...BUILTIN_UNIT_OPTIONS, ...customUnits])),
+    [customUnits],
+  );
 
   const menu = useLiveQuery(
     () =>
@@ -117,14 +135,12 @@ export function MealScreen() {
     [mealLogs, key],
   );
 
-  // טעינת דירוגים קיימים פעם אחת (אם הארוחה כבר נרשמה)
+  // טעינת דירוג השובע הקיים פעם אחת (אם הארוחה כבר נרשמה)
   useEffect(() => {
     if (!profile || ratingsLoaded) return;
     void getSlotLog(profile.id, date, key).then((log) => {
       if (log) {
-        setTaste((log.tasteRating as TasteRating) ?? 0);
         setSatiety((log.satietyRating as SatietyRating) ?? 0);
-        setMood(log.mood ?? '');
       }
       setRatingsLoaded(true);
     });
@@ -168,9 +184,45 @@ export function MealScreen() {
     await removeFoodFromSlot(menu.id, key, foodId);
   }
 
-  async function handleQuantity(foodId: string, quantity: string) {
+  /** כמות נוכחית של מאכל בסלוט (עם ברירת מחדל) */
+  function currentQuantity(foodId: string): FoodQuantity {
+    return (
+      slot?.quantities[foodId] ?? { amount: DEFAULT_AMOUNT, unit: DEFAULT_UNIT }
+    );
+  }
+
+  async function handleAmount(foodId: string, amount: string) {
     if (!menu) return;
-    await setFoodQuantity(menu.id, key, foodId, quantity);
+    await setFoodQuantity(menu.id, key, foodId, {
+      amount,
+      unit: currentQuantity(foodId).unit,
+    });
+  }
+
+  async function handleUnit(foodId: string, value: string) {
+    if (!menu) return;
+    if (value === ADD_UNIT_VALUE) {
+      setNewUnit('');
+      setAddingUnitFor(foodId);
+      return;
+    }
+    await setFoodQuantity(menu.id, key, foodId, {
+      amount: currentQuantity(foodId).amount,
+      unit: value,
+    });
+  }
+
+  async function confirmAddUnit(foodId: string) {
+    if (!menu) return;
+    const unit = newUnit.trim();
+    if (!unit) return;
+    setCustomUnits(addCustomUnit(unit));
+    await setFoodQuantity(menu.id, key, foodId, {
+      amount: currentQuantity(foodId).amount,
+      unit,
+    });
+    setAddingUnitFor(null);
+    setNewUnit('');
   }
 
   async function handleAddCustomFood(input: AddCustomFoodInput) {
@@ -195,9 +247,7 @@ export function MealScreen() {
       foodIds: slot.foodIds,
       quantities: slot.quantities,
       plannedTime: slot.plannedTime,
-      tasteRating: taste === 0 ? undefined : taste,
       satietyRating: satiety === 0 ? undefined : satiety,
-      mood: mood || undefined,
     });
     setCelebrate(randomEncouragement());
     window.setTimeout(() => navigate('/'), 1400);
@@ -279,48 +329,108 @@ export function MealScreen() {
           <p className={styles.empty}>עוד לא הוספת מאכלים לארוחה הזו</p>
         )}
         <div className={styles.foodList}>
-          {slotFoods.map((f) => (
-            <div key={f.id} className={styles.foodRow}>
-              <span className={styles.foodEmoji}>
-                <FoodSymbol symbol={f.emoji} size={22} />
-              </span>
-              <span className={styles.foodName}>{f.name}</span>
-              <label className={styles.qtyField}>
-                <span className={styles.qtySr}>כמות של {f.name}</span>
-                <select
-                  className={styles.qtySelect}
-                  value={slot.quantities[f.id] ?? DEFAULT_QUANTITY}
-                  onChange={(e) => handleQuantity(f.id, e.target.value)}
-                  aria-label={`כמות של ${f.name}`}
-                >
-                  {QUANTITY_OPTIONS.map((q) => (
-                    <option key={q} value={q}>
-                      {q}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <span className={styles.foodGroups}>
-                {f.foodGroups.map((g) => (
-                  <span
-                    key={g}
-                    className={styles.groupTag}
-                    style={{ background: FOOD_GROUP_COLORS[g] }}
-                  >
-                    {g}
+          {slotFoods.map((f) => {
+            const q = currentQuantity(f.id);
+            // מוודאים שהיחידה הנוכחית תמיד קיימת בבורר (גם אם נמחקה מהמאגר)
+            const unitsForFood = unitOptions.includes(q.unit)
+              ? unitOptions
+              : [q.unit, ...unitOptions];
+            return (
+              <div key={f.id} className={styles.foodRow}>
+                <div className={styles.foodTop}>
+                  <span className={styles.foodEmoji}>
+                    <FoodSymbol symbol={f.emoji} size={22} />
                   </span>
-                ))}
-              </span>
-              <button
-                type="button"
-                className={styles.removeBtn}
-                onClick={() => removeFood(f.id)}
-                aria-label={`הסרת ${f.name}`}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
+                  <span className={styles.foodName}>{f.name}</span>
+                  <span className={styles.foodGroups}>
+                    {f.foodGroups.map((g) => (
+                      <span
+                        key={g}
+                        className={styles.groupTag}
+                        style={{ background: FOOD_GROUP_COLORS[g] }}
+                      >
+                        {g}
+                      </span>
+                    ))}
+                  </span>
+                  <button
+                    type="button"
+                    className={styles.removeBtn}
+                    onClick={() => removeFood(f.id)}
+                    aria-label={`הסרת ${f.name}`}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className={styles.foodQty}>
+                  <label className={styles.qtyField}>
+                    <span className={styles.qtyCaption}>כמות</span>
+                    <select
+                      className={styles.qtySelect}
+                      value={q.amount}
+                      onChange={(e) => handleAmount(f.id, e.target.value)}
+                      aria-label={`כמות של ${f.name}`}
+                    >
+                      {AMOUNT_OPTIONS.map((a) => (
+                        <option key={a} value={a}>
+                          {a}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className={styles.qtyField}>
+                    <span className={styles.qtyCaption}>יחידה</span>
+                    <select
+                      className={styles.qtySelect}
+                      value={q.unit}
+                      onChange={(e) => handleUnit(f.id, e.target.value)}
+                      aria-label={`יחידת מדידה של ${f.name}`}
+                    >
+                      {unitsForFood.map((u) => (
+                        <option key={u} value={u}>
+                          {u}
+                        </option>
+                      ))}
+                      <option value={ADD_UNIT_VALUE}>➕ יחידה חדשה…</option>
+                    </select>
+                  </label>
+                </div>
+
+                {addingUnitFor === f.id && (
+                  <div className={styles.addUnitRow}>
+                    <input
+                      type="text"
+                      className={styles.addUnitInput}
+                      value={newUnit}
+                      onChange={(e) => setNewUnit(e.target.value)}
+                      placeholder="שם היחידה (למשל: קופסה)"
+                      autoComplete="off"
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      className={styles.addUnitBtn}
+                      onClick={() => confirmAddUnit(f.id)}
+                      disabled={!newUnit.trim()}
+                    >
+                      הוספה
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.addUnitCancel}
+                      onClick={() => {
+                        setAddingUnitFor(null);
+                        setNewUnit('');
+                      }}
+                    >
+                      ביטול
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
         <button type="button" className={styles.addBtn} onClick={openAdd}>
           <Add size={20} color="var(--coral)" />
@@ -328,27 +438,7 @@ export function MealScreen() {
         </button>
       </section>
 
-      {/* ===== דירוגים (הכי פחות מימין, הכי הרבה משמאל) ===== */}
-      <section className="card">
-        <h2 className={styles.sectionTitle}>איך היה הטעם?</h2>
-        <div className={styles.stars}>
-          {[1, 2, 3, 4, 5].map((n) => {
-            const Star = n <= taste ? StarFilled : StarEmpty;
-            return (
-              <button
-                key={n}
-                type="button"
-                className={styles.starBtn}
-                onClick={() => setTaste(n as TasteRating)}
-                aria-label={`${n} כוכבים`}
-              >
-                <Star size={34} />
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
+      {/* ===== דירוג שובע (המדד החשוב ביותר) ===== */}
       <section className="card">
         <h2 className={styles.sectionTitle}>כמה את שבעה?</h2>
         <div className={styles.faces}>
@@ -372,26 +462,6 @@ export function MealScreen() {
             {SATIETY_FACES.find((f) => f.value === satiety)?.label}
           </p>
         )}
-      </section>
-
-      <section className="card">
-        <h2 className={styles.sectionTitle}>מצב הרוח (רשות)</h2>
-        <div className={styles.moods}>
-          {MOODS.map((m) => (
-            <button
-              key={m.emoji}
-              type="button"
-              className={`${styles.moodBtn} ${
-                mood === m.emoji ? styles.moodOn : ''
-              }`}
-              onClick={() => setMood(mood === m.emoji ? '' : m.emoji)}
-              aria-label={m.label}
-              title={m.label}
-            >
-              {m.emoji}
-            </button>
-          ))}
-        </div>
       </section>
 
       <button

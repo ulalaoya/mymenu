@@ -2,7 +2,7 @@
 // מטא-דאטה לתצוגה בלבד (אייקונים, צבעים, טקסטים) — ללא לוגיקת מנוע.
 
 import type { ComponentType } from 'react';
-import type { FoodGroup, MealSlot } from '../types';
+import type { FoodGroup, FoodQuantity, MealSlot } from '../types';
 import {
   Breakfast,
   Lunch,
@@ -65,14 +65,13 @@ export const ALL_FOOD_GROUPS: FoodGroup[] = [
   'מתוקים',
 ];
 
-/** כמות ברירת המחדל למאכל שנוסף לארוחה */
-export const DEFAULT_QUANTITY = '1';
+/** ברירת המחדל לכמות (מספר) */
+export const DEFAULT_AMOUNT = '1';
+/** ברירת המחדל ליחידת המדידה */
+export const DEFAULT_UNIT = 'יחידות';
 
-/**
- * אפשרויות הכמות לבחירה בעת הוספת מאכל לארוחה:
- * חצי, 1..10, ואז מידות ביתיות (חופן/כוס/חבילה).
- */
-export const QUANTITY_OPTIONS: string[] = [
+/** אפשרויות הכמות (המספר) לבחירה: חצי, 1..10 */
+export const AMOUNT_OPTIONS: string[] = [
   'חצי',
   '1',
   '2',
@@ -84,20 +83,57 @@ export const QUANTITY_OPTIONS: string[] = [
   '8',
   '9',
   '10',
-  'חופן',
-  'כוס',
-  'חבילה',
 ];
 
 /**
- * מעצב כמות לתצוגה קומפקטית לצד שם המאכל.
- * כמות ריקה או "1" — לא מוצגת (ברירת המחדל). מספר → "×3". מילה → כמו שהיא ("חופן").
+ * יחידות המדידה המובנות. המשתמשת יכולה להוסיף יחידות נוספות (נשמרות מקומית,
+ * ראה utils/units.ts) והן מצטרפות לרשימה הזו בבורר.
  */
-export function formatQuantity(quantity?: string): string {
-  const q = (quantity ?? '').trim();
-  if (!q || q === '1') return '';
-  if (/^\d+$/.test(q)) return `×${q}`;
-  return q;
+export const BUILTIN_UNIT_OPTIONS: string[] = [
+  'יחידות',
+  'כפות',
+  'כוסות',
+  'פרוסות',
+  'חבילות',
+  'גרם',
+  'חופן',
+];
+
+/**
+ * מיפוי ערכי-כמות ישנים (מהמודל הראשון, שבו הכמות הייתה מחרוזת אחת) ליחידת
+ * מדידה. מילים אלו היו בעבר "כמות" — עכשיו הן יחידות, עם כמות 1.
+ */
+const LEGACY_UNIT_WORDS: Record<string, string> = {
+  חופן: 'חופן',
+  כוס: 'כוסות',
+  חבילה: 'חבילות',
+};
+
+/**
+ * מנרמל ערך כמות לצורה אחידה { amount, unit }. תומך גם בנתונים ישנים שנשמרו
+ * כמחרוזת בלבד (לפני הוספת יחידת המדידה) וגם בערך חסר.
+ */
+export function normalizeQuantity(
+  q?: FoodQuantity | string | null,
+): FoodQuantity {
+  if (!q) return { amount: DEFAULT_AMOUNT, unit: DEFAULT_UNIT };
+  if (typeof q === 'string') {
+    // ערך ישן שהיה בעצם יחידה (חופן/כוס/חבילה) → כמות 1 + היחידה המתאימה
+    const legacyUnit = LEGACY_UNIT_WORDS[q];
+    if (legacyUnit) return { amount: DEFAULT_AMOUNT, unit: legacyUnit };
+    return { amount: q || DEFAULT_AMOUNT, unit: DEFAULT_UNIT };
+  }
+  return { amount: q.amount || DEFAULT_AMOUNT, unit: q.unit || DEFAULT_UNIT };
+}
+
+/**
+ * מעצב כמות לתצוגה קומפקטית לצד שם המאכל, למשל "3 כפות" / "חצי כוסות".
+ * כמות ברירת מחדל (1 יחידות) — לא מוצגת, כדי לא להעמיס על התצוגה.
+ */
+export function formatQuantity(q?: FoodQuantity | string | null): string {
+  const { amount, unit } = normalizeQuantity(q);
+  if (amount === DEFAULT_AMOUNT && unit === DEFAULT_UNIT) return '';
+  return unit ? `${amount} ${unit}` : amount;
 }
 
 /** ברכה אישית לפי שעת היום */
