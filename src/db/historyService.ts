@@ -38,6 +38,21 @@ export interface DayCell {
    * 0=ריק, 1=מעט, 2=חלקי, 3=כמעט מלא, 4=יום מלא (כל הארוחות + מספיק מים).
    */
   completeness: 0 | 1 | 2 | 3 | 4;
+  /** יום מעולה: הרבה ירקות + שתיית מים טובה — מסומן בכוכבית */
+  star: boolean;
+}
+
+/** מספר מאכלי הירקות המינימלי ביום כדי שייחשב "עמוס בירקות" */
+export const EXCELLENT_VEGGIE_MIN = 2;
+/** כוסות המים המינימליות ביום כדי שייחשב "שתיית מים טובה" */
+export const EXCELLENT_WATER_MIN = 6;
+
+/**
+ * יום מעולה (כוכבית): נאכלו לפחות EXCELLENT_VEGGIE_MIN מאכלי ירקות שונים
+ * ונשתו לפחות EXCELLENT_WATER_MIN כוסות מים. חוויה חיובית — סימון הצטיינות.
+ */
+export function isExcellentDay(veggieFoods: number, waterCups: number): boolean {
+  return veggieFoods >= EXCELLENT_VEGGIE_MIN && waterCups >= EXCELLENT_WATER_MIN;
 }
 
 /** לוח שנה חודשי מלא */
@@ -86,7 +101,7 @@ export async function getMonthCalendar(
   const to = dateStr(year, month, daysInMonth);
   const startWeekday = new Date(year, month - 1, 1).getDay();
 
-  const [logs, waters] = await Promise.all([
+  const [logs, waters, foods] = await Promise.all([
     db.mealLogs
       .where('[profileId+date]')
       .between([profileId, from], [profileId, to], true, true)
@@ -95,15 +110,27 @@ export async function getMonthCalendar(
       .where('[profileId+date]')
       .between([profileId, from], [profileId, to], true, true)
       .toArray(),
+    getProfileFoods(profileId),
   ]);
+
+  const foodsById = new Map<string, FoodItem>();
+  foods.forEach((f) => foodsById.set(f.id, f));
 
   // כמה משבצות שונות נרשמו לכל יום (ארוחה שנרשמה פעמיים נספרת פעם אחת).
   // סופרים לפי מפתח הסלוט (כולל סלוטים מותאמים) כדי לא לאחד ארוחות שונות.
   const slotsByDate = new Map<string, Set<string>>();
+  // מאכלי ירקות שונים שנאכלו בכל יום (לסימון "יום מעולה")
+  const veggiesByDate = new Map<string, Set<string>>();
   for (const log of logs) {
     const set = slotsByDate.get(log.date) ?? new Set<string>();
     set.add(log.slotId ?? log.slot);
     slotsByDate.set(log.date, set);
+
+    const veg = veggiesByDate.get(log.date) ?? new Set<string>();
+    for (const id of log.foodIds) {
+      if (foodsById.get(id)?.foodGroups.includes('ירקות')) veg.add(id);
+    }
+    veggiesByDate.set(log.date, veg);
   }
   const waterByDate = new Map<string, number>();
   for (const w of waters) waterByDate.set(w.date, w.cups);
@@ -113,12 +140,14 @@ export async function getMonthCalendar(
     const date = dateStr(year, month, d);
     const mealsLogged = slotsByDate.get(date)?.size ?? 0;
     const waterCups = waterByDate.get(date) ?? 0;
+    const veggieFoods = veggiesByDate.get(date)?.size ?? 0;
     days.push({
       date,
       day: d,
       mealsLogged,
       waterCups,
       completeness: computeCompleteness(mealsLogged, waterCups),
+      star: isExcellentDay(veggieFoods, waterCups),
     });
   }
 
@@ -425,6 +454,57 @@ export async function getWeeklyGroupVariety(
   }
 
   return { weekStart, days, maxGroups: TOTAL_FOOD_GROUPS };
+}
+
+// ===== מה הכי אכלתי השבוע =====
+
+/** מאכל שנאכל השבוע ומספר הפעמים */
+export interface MostEatenFood {
+  id: string;
+  name: string;
+  emoji: string;
+  /** כמה פעמים נאכל השבוע */
+  count: number;
+}
+
+/**
+ * המאכלים שנאכלו הכי הרבה פעמים בשבוע הנוכחי (7 ימים מ-weekStart).
+ * סופר כל הופעה של מאכל ברישומי הארוחות; הנפוץ ביותר קודם, עד limit.
+ * מציאותי ולא שיפוטי — פשוט מה שנאכל הכי הרבה בפועל (SPEC: חוויה חיובית).
+ */
+export async function getMostEatenThisWeek(
+  profileId: string,
+  weekStart: string,
+  limit = 5,
+): Promise<MostEatenFood[]> {
+  const weekEnd = addDays(weekStart, 6);
+  const [logs, foods] = await Promise.all([
+    db.mealLogs
+      .where('[profileId+date]')
+      .between([profileId, weekStart], [profileId, weekEnd], true, true)
+      .toArray(),
+    getProfileFoods(profileId),
+  ]);
+
+  const foodsById = new Map<string, FoodItem>();
+  foods.forEach((f) => foodsById.set(f.id, f));
+
+  const counts = new Map<string, number>();
+  for (const log of logs) {
+    for (const id of log.foodIds) {
+      counts.set(id, (counts.get(id) ?? 0) + 1);
+    }
+  }
+
+  const result: MostEatenFood[] = [];
+  for (const [id, count] of counts) {
+    const f = foodsById.get(id);
+    if (f) result.push({ id, name: f.name, emoji: f.emoji, count });
+  }
+  result.sort(
+    (a, b) => b.count - a.count || a.name.localeCompare(b.name, 'he'),
+  );
+  return result.slice(0, limit);
 }
 
 // ===== עזרי תאריך לתצוגה =====

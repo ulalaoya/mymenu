@@ -5,26 +5,19 @@ import {
   getMonthCalendar,
   getDayDetails,
   computeStreak,
-  getNewFoodsTried,
-  getWinnerMenus,
+  getMostEatenThisWeek,
   getWeeklyGroupVariety,
   startOfWeek,
   type MonthCalendar,
   type DayDetails,
-  type TriedFood,
-  type WinnerMenuCard,
+  type MostEatenFood,
   type WeeklyVariety,
 } from '../db/historyService';
 import { todayString } from '../utils/date';
 import { SLOT_LABELS, SATIETY_FACES } from '../utils/menuDisplay';
 import { BottomSheet } from '../components/BottomSheet';
 import { FoodSymbol } from '../components/FoodSymbol';
-import {
-  Progress,
-  Calendar,
-  StarFilled,
-  Sparkle,
-} from '../components/icons';
+import { Progress, Calendar, Sparkle } from '../components/icons';
 import styles from './HistoryScreen.module.css';
 
 /** כותרות ימי השבוע (ראשון..שבת) */
@@ -61,8 +54,7 @@ export function HistoryScreen() {
 
   const [calendar, setCalendar] = useState<MonthCalendar | null>(null);
   const [streak, setStreak] = useState(0);
-  const [tried, setTried] = useState<TriedFood[]>([]);
-  const [winners, setWinners] = useState<WinnerMenuCard[]>([]);
+  const [mostEaten, setMostEaten] = useState<MostEatenFood[]>([]);
   const [variety, setVariety] = useState<WeeklyVariety | null>(null);
   const [selectedDay, setSelectedDay] = useState<DayDetails | null>(null);
 
@@ -78,21 +70,19 @@ export function HistoryScreen() {
     };
   }, [profile?.id, year, month]);
 
-  // טעינת נתוני התקדמות (רצף, מאכלים, מנצחים, גיוון)
+  // טעינת נתוני התקדמות (רצף, מה הכי אכלתי השבוע, גיוון)
   useEffect(() => {
     if (!profile) return;
     let cancelled = false;
     const weekStart = startOfWeek(today);
     void Promise.all([
       computeStreak(profile.id, today),
-      getNewFoodsTried(profile.id),
-      getWinnerMenus(profile.id),
+      getMostEatenThisWeek(profile.id, weekStart),
       getWeeklyGroupVariety(profile.id, weekStart),
-    ]).then(([s, t, w, v]) => {
+    ]).then(([s, m, v]) => {
       if (cancelled) return;
       setStreak(s);
-      setTried(t);
-      setWinners(w);
+      setMostEaten(m);
       setVariety(v);
     });
     return () => {
@@ -190,9 +180,21 @@ export function HistoryScreen() {
                   styles[`c${cell.completeness}`]
                 } ${cell.date === today ? styles.dayToday : ''}`}
                 onClick={() => openDay(cell.date)}
-                aria-label={`${cell.day} — ${cell.mealsLogged} ארוחות`}
+                title={
+                  cell.star
+                    ? 'יום מעולה! ⭐'
+                    : cell.completeness >= 4
+                      ? 'יום מלא - כל הכבוד!'
+                      : `${cell.mealsLogged} ארוחות`
+                }
+                aria-label={
+                  cell.star
+                    ? `${cell.day} — יום מעולה, הרבה ירקות ומים`
+                    : `${cell.day} — ${cell.mealsLogged} ארוחות`
+                }
               >
                 {cell.day}
+                {cell.star && <span className={styles.dayStar}>⭐</span>}
               </button>
             ) : (
               <span key={`e${i}`} className={styles.dayEmpty} />
@@ -204,72 +206,49 @@ export function HistoryScreen() {
           <span className={`${styles.legendDot} ${styles.c1}`} />
           <span className={styles.legendText}>מעט</span>
           <span className={`${styles.legendDot} ${styles.c4}`} />
-          <span className={styles.legendText}>יום מלא ומגניב!</span>
+          <span className={styles.legendText}>יום מלא - כל הכבוד!</span>
+          <span className={styles.legendStar}>⭐</span>
+          <span className={styles.legendText}>יום מעולה (הרבה ירקות ומים)</span>
         </div>
       </section>
 
-      {/* ===== הקירות שלי ===== */}
+      {/* ===== רצף + מה הכי אכלתי השבוע ===== */}
       <section className="card">
+        {/* רצף ימים — ימים רצופים שבהם מילאת את התפריט */}
         <div className={styles.sectionTitle}>
           <Sparkle size={22} />
-          <h2>ההצלחות שלי</h2>
+          <h2>הרצף שלי</h2>
         </div>
-
-        {/* רצף ימים */}
         <div className={styles.streakBox}>
           <span className={styles.streakFlame}>🔥</span>
           <div>
             <div className={styles.streakNum}>{streak}</div>
             <div className={styles.streakLabel}>
               {streak === 0
-                ? 'מתחילים רצף חדש — קדימה!'
+                ? 'עוד לא התחלת רצף — כל יום שתמלאי את התפריט נספר!'
                 : streak === 1
-                  ? 'יום ברצף! ממשיכים מחר'
-                  : `ימים ברצף! איזה כיף 🎉`}
+                  ? 'יום רצוף שמילאת את התפריט 🎉'
+                  : 'ימים רצופים שמילאת את התפריט! 🎉'}
             </div>
           </div>
         </div>
 
-        {/* מאכלים חדשים שניסיתי */}
-        <h3 className={styles.subTitle}>מאכלים חדשים שניסיתי 🌟</h3>
-        {tried.length === 0 ? (
+        {/* מה הכי אכלתי השבוע */}
+        <h3 className={styles.subTitle}>מה הכי אכלתי השבוע? 🍽️</h3>
+        {mostEaten.length === 0 ? (
           <p className={styles.emptyHint}>
-            כל מאכל חדש שתנסי יופיע כאן — כיף לגלות טעמים!
+            כשתרשמי ארוחות השבוע, המאכלים הכי נפוצים יופיעו כאן.
           </p>
         ) : (
           <div className={styles.chips}>
-            {tried.map((t) => (
-              <span
-                key={t.id}
-                className={`${styles.chip} ${t.isCustom ? styles.chipCustom : ''}`}
-              >
+            {mostEaten.map((f) => (
+              <span key={f.id} className={styles.chip}>
                 <span className={styles.chipEmoji}>
-                  <FoodSymbol symbol={t.emoji} size={18} />
+                  <FoodSymbol symbol={f.emoji} size={18} />
                 </span>
-                {t.name}
+                {f.name}
+                <span className={styles.chipCount}>×{f.count}</span>
               </span>
-            ))}
-          </div>
-        )}
-
-        {/* תפריטים מנצחים */}
-        <h3 className={styles.subTitle}>התפריטים המנצחים שלי ⭐</h3>
-        {winners.length === 0 ? (
-          <p className={styles.emptyHint}>
-            תפריט שתאהבי במיוחד יהפוך לתפריט מנצח!
-          </p>
-        ) : (
-          <div className={styles.winners}>
-            {winners.map((w) => (
-              <div key={w.id} className={styles.winnerCard}>
-                <div className={styles.winnerHead}>
-                  <StarFilled size={18} />
-                  <span className={styles.winnerDate}>{prettyDate(w.date)}</span>
-                </div>
-                <div className={styles.winnerFoods}>
-                  {w.highlights.join(' · ') || 'תפריט מנצח'}
-                </div>
-              </div>
             ))}
           </div>
         )}
