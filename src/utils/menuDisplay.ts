@@ -65,6 +65,41 @@ export const ALL_FOOD_GROUPS: FoodGroup[] = [
   'מתוקים',
 ];
 
+/** כמות ברירת המחדל למאכל שנוסף לארוחה */
+export const DEFAULT_QUANTITY = '1';
+
+/**
+ * אפשרויות הכמות לבחירה בעת הוספת מאכל לארוחה:
+ * חצי, 1..10, ואז מידות ביתיות (חופן/כוס/חבילה).
+ */
+export const QUANTITY_OPTIONS: string[] = [
+  'חצי',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '10',
+  'חופן',
+  'כוס',
+  'חבילה',
+];
+
+/**
+ * מעצב כמות לתצוגה קומפקטית לצד שם המאכל.
+ * כמות ריקה או "1" — לא מוצגת (ברירת המחדל). מספר → "×3". מילה → כמו שהיא ("חופן").
+ */
+export function formatQuantity(quantity?: string): string {
+  const q = (quantity ?? '').trim();
+  if (!q || q === '1') return '';
+  if (/^\d+$/.test(q)) return `×${q}`;
+  return q;
+}
+
 /** ברכה אישית לפי שעת היום */
 export function greetingForHour(hour: number): string {
   if (hour >= 5 && hour < 12) return 'בוקר טוב';

@@ -15,6 +15,7 @@ import {
   getDiarySlot,
   addFoodToSlot,
   removeFoodFromSlot,
+  setFoodQuantity,
   setSlotTime,
   logSlotMeal,
   deleteSlotLog,
@@ -38,6 +39,8 @@ import {
   FOOD_GROUP_COLORS,
   SATIETY_FACES,
   MOODS,
+  QUANTITY_OPTIONS,
+  DEFAULT_QUANTITY,
   randomEncouragement,
 } from '../utils/menuDisplay';
 import { BottomSheet } from '../components/BottomSheet';
@@ -165,6 +168,11 @@ export function MealScreen() {
     await removeFoodFromSlot(menu.id, key, foodId);
   }
 
+  async function handleQuantity(foodId: string, quantity: string) {
+    if (!menu) return;
+    await setFoodQuantity(menu.id, key, foodId, quantity);
+  }
+
   async function handleAddCustomFood(input: AddCustomFoodInput) {
     if (!profile || !menu) return;
     const food = await addCustomFood(profile.id, input);
@@ -185,6 +193,7 @@ export function MealScreen() {
       slot: slot.slot,
       slotLabel: slot.custom ? slot.label : undefined,
       foodIds: slot.foodIds,
+      quantities: slot.quantities,
       plannedTime: slot.plannedTime,
       tasteRating: taste === 0 ? undefined : taste,
       satietyRating: satiety === 0 ? undefined : satiety,
@@ -276,6 +285,21 @@ export function MealScreen() {
                 <FoodSymbol symbol={f.emoji} size={22} />
               </span>
               <span className={styles.foodName}>{f.name}</span>
+              <label className={styles.qtyField}>
+                <span className={styles.qtySr}>כמות של {f.name}</span>
+                <select
+                  className={styles.qtySelect}
+                  value={slot.quantities[f.id] ?? DEFAULT_QUANTITY}
+                  onChange={(e) => handleQuantity(f.id, e.target.value)}
+                  aria-label={`כמות של ${f.name}`}
+                >
+                  {QUANTITY_OPTIONS.map((q) => (
+                    <option key={q} value={q}>
+                      {q}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <span className={styles.foodGroups}>
                 {f.foodGroups.map((g) => (
                   <span

@@ -135,6 +135,8 @@ export interface DayMealEntry {
   foodNames: string[];
   /** אימוג'ים תואמים */
   foodEmojis: string[];
+  /** כמויות תואמות (foodId → תווית כמות; "" אם ברירת מחדל) */
+  foodQuantities: string[];
   eatenAt: number;
   tasteRating?: TasteRating;
   satietyRating?: SatietyRating;
@@ -173,13 +175,16 @@ export async function getDayDetails(
   const meals: DayMealEntry[] = logs
     .map((log) => {
       const items = log.foodIds
-        .map((id) => foodsById.get(id))
-        .filter((f): f is FoodItem => Boolean(f));
+        .map((id) => ({ food: foodsById.get(id), q: log.quantities?.[id] }))
+        .filter((e): e is { food: FoodItem; q: string | undefined } =>
+          Boolean(e.food),
+        );
       return {
         slot: log.slot,
         slotLabel: log.slotLabel,
-        foodNames: items.map((f) => f.name),
-        foodEmojis: items.map((f) => f.emoji),
+        foodNames: items.map((e) => e.food.name),
+        foodEmojis: items.map((e) => e.food.emoji),
+        foodQuantities: items.map((e) => e.q ?? ''),
         eatenAt: log.eatenAt,
         tasteRating: log.tasteRating,
         satietyRating: log.satietyRating,

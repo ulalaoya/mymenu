@@ -58,6 +58,8 @@ export interface Profile {
 export interface MenuSlot {
   slot: MealSlot;
   foodIds: string[];
+  /** כמות פר-מאכל (foodId → תווית כמות, למשל "3" / "חופן" / "כוס"). ברירת מחדל "1" */
+  quantities?: Record<string, string>;
   plannedTime: string;
   /** מזהה ייחודי לסלוט מותאם שהמשתמשת הוסיפה (סלוטים קבועים: undefined) */
   id?: string;
@@ -75,6 +77,8 @@ export interface Menu {
   date: string;
   slots: MenuSlot[];
   sweetFoodId?: string;
+  /** כמות הממתק היומי (ברירת מחדל "1") */
+  sweetQuantity?: string;
   /** שעת הממתק היומי (ניתנת לעדכון פר-יום, כמו שאר הסלוטים) */
   sweetTime?: string;
   overallRating?: number;
@@ -100,6 +104,8 @@ export interface MealLog {
   /** תווית תצוגה של סלוט מותאם (למקרה שאין שם משבצת קבוע) */
   slotLabel?: string;
   foodIds: string[];
+  /** כמות פר-מאכל שנרשמה (foodId → תווית כמות). ברירת מחדל "1" */
+  quantities?: Record<string, string>;
   /** timestamp של שעת האכילה */
   eatenAt: number;
   tasteRating?: TasteRating;

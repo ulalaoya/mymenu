@@ -25,6 +25,7 @@ import {
   FOOD_GROUP_COLORS,
   SLOT_ICONS,
   greetingForHour,
+  formatQuantity,
 } from '../utils/menuDisplay';
 import { PROFILE_COLORS } from '../db/constants';
 import { BottomSheet } from '../components/BottomSheet';
@@ -225,7 +226,12 @@ export function HomeScreen() {
             const Icon = SLOT_ICONS[s.slot];
             const eaten = eatenKeys.has(s.key);
             const names = s.foodIds
-              .map((id) => foodsById.get(id)?.name)
+              .map((id) => {
+                const name = foodsById.get(id)?.name;
+                if (!name) return null;
+                const qty = formatQuantity(s.quantities[id]);
+                return qty ? `${name} ${qty}` : name;
+              })
               .filter(Boolean) as string[];
             return (
               <li

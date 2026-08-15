@@ -21,9 +21,14 @@ void ensurePersistentStorage();
 // זריעת מאגר בסיסי אם ריק (המימוש המלא בשלב 3)
 void seedIfEmpty();
 
+// בבנייה ל-GitHub Pages האפליקציה יושבת תחת /mymenu/, ולכן ה-router חייב
+// לדעת את קידומת הבסיס — אחרת נתיב השורש (/mymenu/) לא תואם לאף route
+// ומסך הבית נראה ריק. בפיתוח BASE_URL='/' וה-basename יוצא '/'.
+const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={routerBasename}>
       <AuthProvider>
         <App />
       </AuthProvider>

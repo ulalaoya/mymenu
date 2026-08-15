@@ -22,7 +22,7 @@ import {
   loadFoodStats,
   type FoodStatsComputed,
 } from '../engine';
-import { DAY_SLOTS, SLOT_LABELS } from '../utils/menuDisplay';
+import { DAY_SLOTS, SLOT_LABELS, DEFAULT_QUANTITY } from '../utils/menuDisplay';
 import { timeToMinutes } from '../utils/date';
 
 /** מפתח הסלוט של הממתק היומי ביומן */
@@ -298,6 +298,8 @@ export interface DiarySlot {
   /** תווית תצוגה */
   label: string;
   foodIds: string[];
+  /** כמות פר-מאכל (foodId → תווית כמות). מאכל ללא רשומה = "1" */
+  quantities: Record<string, string>;
   plannedTime: string;
   /** סלוט שהמשתמשת הוסיפה ידנית */
   custom: boolean;
@@ -324,6 +326,7 @@ export function getDiarySlots(menu: Menu, profile: Profile): DiarySlot[] {
       slot,
       label: SLOT_LABELS[slot],
       foodIds: ms?.foodIds ?? [],
+      quantities: ms?.quantities ?? {},
       plannedTime: ms?.plannedTime || profile.mealTimes[slot] || '',
       custom: false,
       isSweet: false,
@@ -335,6 +338,9 @@ export function getDiarySlots(menu: Menu, profile: Profile): DiarySlot[] {
     slot: 'ממתק',
     label: SLOT_LABELS['ממתק'],
     foodIds: menu.sweetFoodId ? [menu.sweetFoodId] : [],
+    quantities: menu.sweetFoodId
+      ? { [menu.sweetFoodId]: menu.sweetQuantity ?? DEFAULT_QUANTITY }
+      : {},
     plannedTime:
       menu.sweetTime || profile.mealTimes['ממתק'] || DEFAULT_SWEET_TIME,
     custom: false,
@@ -346,6 +352,7 @@ export function getDiarySlots(menu: Menu, profile: Profile): DiarySlot[] {
     slot: s.slot,
     label: s.label || SLOT_LABELS[s.slot],
     foodIds: s.foodIds,
+    quantities: s.quantities ?? {},
     plannedTime: s.plannedTime,
     custom: true,
     isSweet: false,
@@ -411,24 +418,52 @@ function updateSlotList(
   return [...menu.slots, created];
 }
 
-/** מוסיף מאכל לסלוט (הממתק = פריט יחיד ולכן מוחלף) */
+/** מוסיף מאכל לסלוט עם כמות (הממתק = פריט יחיד ולכן מוחלף) */
 export async function addFoodToSlot(
   menuId: string,
   key: string,
   foodId: string,
+  quantity: string = DEFAULT_QUANTITY,
 ): Promise<Menu | undefined> {
   if (key === SWEET_KEY) {
-    return mutateMenu(menuId, (menu) => ({ ...menu, sweetFoodId: foodId }));
+    return mutateMenu(menuId, (menu) => ({
+      ...menu,
+      sweetFoodId: foodId,
+      sweetQuantity: quantity,
+    }));
+  }
+  return mutateMenu(menuId, (menu) => ({
+    ...menu,
+    slots: updateSlotList(menu, key, (slot) => {
+      const prevQ = slot?.quantities ?? {};
+      return {
+        foodIds: [...new Set([...(slot?.foodIds ?? []), foodId])],
+        // אם המאכל כבר קיים — שומרים על הכמות שנבחרה קודם
+        quantities: { ...prevQ, [foodId]: prevQ[foodId] ?? quantity },
+      };
+    }),
+  }));
+}
+
+/** מעדכן את הכמות של מאכל קיים בסלוט */
+export async function setFoodQuantity(
+  menuId: string,
+  key: string,
+  foodId: string,
+  quantity: string,
+): Promise<Menu | undefined> {
+  if (key === SWEET_KEY) {
+    return mutateMenu(menuId, (menu) => ({ ...menu, sweetQuantity: quantity }));
   }
   return mutateMenu(menuId, (menu) => ({
     ...menu,
     slots: updateSlotList(menu, key, (slot) => ({
-      foodIds: [...new Set([...(slot?.foodIds ?? []), foodId])],
+      quantities: { ...(slot?.quantities ?? {}), [foodId]: quantity },
     })),
   }));
 }
 
-/** מסיר מאכל מסלוט */
+/** מסיר מאכל מסלוט (וגם את רשומת הכמות שלו) */
 export async function removeFoodFromSlot(
   menuId: string,
   key: string,
@@ -438,13 +473,20 @@ export async function removeFoodFromSlot(
     return mutateMenu(menuId, (menu) => ({
       ...menu,
       sweetFoodId: menu.sweetFoodId === foodId ? undefined : menu.sweetFoodId,
+      sweetQuantity:
+        menu.sweetFoodId === foodId ? undefined : menu.sweetQuantity,
     }));
   }
   return mutateMenu(menuId, (menu) => ({
     ...menu,
-    slots: updateSlotList(menu, key, (slot) => ({
-      foodIds: (slot?.foodIds ?? []).filter((id) => id !== foodId),
-    })),
+    slots: updateSlotList(menu, key, (slot) => {
+      const nextQ = { ...(slot?.quantities ?? {}) };
+      delete nextQ[foodId];
+      return {
+        foodIds: (slot?.foodIds ?? []).filter((id) => id !== foodId),
+        quantities: nextQ,
+      };
+    }),
   }));
 }
 
@@ -514,6 +556,8 @@ export interface LogSlotInput {
   slot: MealSlot;
   slotLabel?: string;
   foodIds: string[];
+  /** כמות פר-מאכל (foodId → תווית כמות) */
+  quantities?: Record<string, string>;
   plannedTime: string;
   tasteRating?: TasteRating;
   satietyRating?: SatietyRating;
@@ -561,6 +605,7 @@ export async function logSlotMeal(
     slotId: input.slotKey,
     slotLabel: input.slotLabel,
     foodIds: input.foodIds,
+    quantities: input.quantities,
     eatenAt: eatenAt.getTime(),
     tasteRating: input.tasteRating,
     satietyRating: input.satietyRating,
