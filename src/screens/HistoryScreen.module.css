@@ -14,7 +14,7 @@
   align-items: center;
   gap: var(--space-2);
   font-size: 26px;
-  color: var(--blue);
+  color: var(--accent, var(--blue));
 }
 
 /* ===== לוח שנה ===== */
@@ -87,12 +87,12 @@
   transition: transform 0.12s ease;
 }
 
-/* כוכבית "יום מעולה" בפינת התא */
+/* כוכבית "יום מעולה" בפינה העליונה בתוך התא (על שורת היום עצמו) */
 .dayStar {
   position: absolute;
-  top: -4px;
-  inset-inline-end: -2px;
-  font-size: 12px;
+  top: 1px;
+  inset-inline-end: 2px;
+  font-size: 10px;
   line-height: 1;
   pointer-events: none;
 }

@@ -37,6 +37,9 @@ const MONTH_NAMES = [
   'דצמבר',
 ];
 
+/** צבע ההדגשה של הפרופיל (נקבע גלובלית לפי הצבע הנבחר בהגדרות) */
+const ACCENT = 'var(--accent, var(--blue))';
+
 /** מציג תאריך YYYY-MM-DD בעברית ידידותית */
 function prettyDate(date: string): string {
   const [, m, d] = date.split('-').map(Number);
@@ -130,7 +133,7 @@ export function HistoryScreen() {
     <div className={styles.wrap}>
       <header className={styles.header}>
         <h1 className={styles.title}>
-          <Progress size={28} /> ההתקדמות שלי
+          <Progress size={28} color={ACCENT} /> ההתקדמות שלי
         </h1>
       </header>
 
@@ -147,7 +150,7 @@ export function HistoryScreen() {
             ‹
           </button>
           <div className={styles.calTitle}>
-            <Calendar size={20} />
+            <Calendar size={20} color={ACCENT} />
             <span>
               {MONTH_NAMES[month - 1]} {year}
             </span>
@@ -218,7 +221,7 @@ export function HistoryScreen() {
       <section className="card">
         {/* רצף ימים — ימים רצופים שבהם מילאת את התפריט */}
         <div className={styles.sectionTitle}>
-          <Sparkle size={22} />
+          <Sparkle size={22} color={ACCENT} />
           <h2>הרצף שלי</h2>
         </div>
         <div className={styles.streakBox}>
@@ -259,7 +262,7 @@ export function HistoryScreen() {
       {/* ===== גרף גיוון שבועי ===== */}
       <section className="card">
         <div className={styles.sectionTitle}>
-          <Sparkle size={22} />
+          <Sparkle size={22} color={ACCENT} />
           <h2>כמה מגוון אכלת השבוע! 🌈</h2>
         </div>
         <p className={styles.chartHint}>

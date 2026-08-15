@@ -51,6 +51,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // מפרסם את צבע הפרופיל כמשתנה CSS גלובלי (--accent) כדי שכל המסכים
+  // (בית, היסטוריה, הגדרות) ישקפו את הצבע הנבחר, ולא רק עמוד הבית.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (profile?.color) root.style.setProperty('--accent', profile.color);
+    else root.style.removeProperty('--accent');
+  }, [profile?.color]);
+
   const login = useCallback(async (username: string, password: string) => {
     const p = await dbLogin(username, password);
     if (p) setProfile(p);

@@ -19,6 +19,9 @@ import {
 } from '../components/icons';
 import styles from './SettingsScreen.module.css';
 
+/** צבע ההדגשה של הפרופיל (נקבע גלובלית לפי הצבע הנבחר בהגדרות) */
+const ACCENT = 'var(--accent, var(--blue))';
+
 export function SettingsScreen() {
   const { profile, updateActiveProfile, logout } = useAuth();
   const navigate = useNavigate();
@@ -119,7 +122,7 @@ export function SettingsScreen() {
     <div className={styles.wrap}>
       <header className={styles.header}>
         <h1 className={styles.title}>
-          <Journal size={28} /> הגדרות
+          <Journal size={28} color={ACCENT} /> הגדרות
         </h1>
       </header>
 
@@ -178,7 +181,7 @@ export function SettingsScreen() {
       {/* ===== שעות ארוחה ===== */}
       <section className="card">
         <div className={styles.sectionTitle}>
-          <Clock size={22} /> <span>שעות הארוחות שלי</span>
+          <Clock size={22} color={ACCENT} /> <span>שעות הארוחות שלי</span>
         </div>
         <p className={styles.hint}>
           האפליקציה לומדת מתי את אוכלת, אבל את תמיד יכולה לקבוע בעצמך 😊
@@ -201,7 +204,7 @@ export function SettingsScreen() {
       {/* ===== אלרגיות + צמחונות ===== */}
       <section className="card">
         <div className={styles.sectionTitle}>
-          <AllergyWarning size={22} /> <span>מאכלים שאסור לי</span>
+          <AllergyWarning size={22} color={ACCENT} /> <span>מאכלים שאסור לי</span>
         </div>
         <p className={styles.hint}>
           מאכלים שנוסיף כאן פשוט לא יופיעו בהמלצות שלך.
