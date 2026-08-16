@@ -143,6 +143,28 @@ export function SettingsScreen() {
     }
   }
 
+  /** מוחק רשומת מדידת היקפים ספציפית */
+  async function removeMeasurement(entry: MeasurementEntry) {
+    if (!profile) return;
+    const log = (profile.measurementLog ?? []).filter((x) => x !== entry);
+    const updated = await updateProfile(profile.id, { measurementLog: log });
+    if (updated) {
+      updateActiveProfile(updated);
+      flashSaved('המדידה נמחקה');
+    }
+  }
+
+  /** מוחק רשומת פלאנק ספציפית */
+  async function removePlank(entry: PlankEntry) {
+    if (!profile) return;
+    const log = (profile.plankLog ?? []).filter((x) => x !== entry);
+    const updated = await updateProfile(profile.id, { plankLog: log });
+    if (updated) {
+      updateActiveProfile(updated);
+      flashSaved('המדידה נמחקה');
+    }
+  }
+
   /** מוסיף מדידת פלאנק מתוארכת ליומן ושומר */
   async function addPlank() {
     if (!profile) return;
@@ -421,6 +443,14 @@ export function SettingsScreen() {
                       .join(' · ')}{' '}
                     ס״מ
                   </span>
+                  <button
+                    type="button"
+                    className={styles.logDelete}
+                    onClick={() => removeMeasurement(e)}
+                    aria-label={`מחיקת מדידה מ-${formatDate(e.date)}`}
+                  >
+                    ✕
+                  </button>
                 </div>
               ))}
             </div>
@@ -448,18 +478,8 @@ export function SettingsScreen() {
           </label>
           <label className={styles.timeRow}>
             <span className={styles.timeLabel}>משך</span>
+            {/* RTL: השדה הראשון מוצג מימין — שניות מימין, דקות משמאל */}
             <span className={styles.measureField}>
-              <input
-                type="number"
-                inputMode="numeric"
-                min="0"
-                className={styles.measureInput}
-                value={plankMin}
-                onChange={(e) => setPlankMin(e.target.value)}
-                placeholder="0"
-                aria-label="דקות"
-              />
-              <span className={styles.measureUnit}>דק׳</span>
               <input
                 type="number"
                 inputMode="numeric"
@@ -472,6 +492,17 @@ export function SettingsScreen() {
                 aria-label="שניות"
               />
               <span className={styles.measureUnit}>שנ׳</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                min="0"
+                className={styles.measureInput}
+                value={plankMin}
+                onChange={(e) => setPlankMin(e.target.value)}
+                placeholder="0"
+                aria-label="דקות"
+              />
+              <span className={styles.measureUnit}>דק׳</span>
             </span>
           </label>
           <button
@@ -489,6 +520,14 @@ export function SettingsScreen() {
                   <span className={styles.logVals}>
                     {formatPlank(e.seconds)} דק׳
                   </span>
+                  <button
+                    type="button"
+                    className={styles.logDelete}
+                    onClick={() => removePlank(e)}
+                    aria-label={`מחיקת מדידה מ-${formatDate(e.date)}`}
+                  >
+                    ✕
+                  </button>
                 </div>
               ))}
             </div>

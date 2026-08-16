@@ -209,9 +209,20 @@
 }
 
 .logVals {
+  flex: 1;
   color: var(--text);
   font-size: 14px;
   text-align: start;
+}
+
+.logDelete {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--text-soft);
+  font-size: 14px;
 }
 
 /* ===== אלרגיות ===== */
