@@ -40,11 +40,13 @@ function formatDate(d: string): string {
   return `${day}.${m}.${y}`;
 }
 
-/** מציג משך פלאנק (שניות) כ-מ:שש */
+/** מציג משך פלאנק (שניות) עם יחידות ברורות, למשל "54 שנ׳" או "2 דק׳ 30 שנ׳" */
 function formatPlank(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
-  return `${m}:${String(s).padStart(2, '0')}`;
+  if (m > 0 && s > 0) return `${m} דק׳ ${s} שנ׳`;
+  if (m > 0) return `${m} דק׳`;
+  return `${s} שנ׳`;
 }
 
 export function SettingsScreen() {
@@ -517,9 +519,7 @@ export function SettingsScreen() {
               {plankLog.map((e, i) => (
                 <div key={i} className={styles.logRow}>
                   <span className={styles.logDate}>{formatDate(e.date)}</span>
-                  <span className={styles.logVals}>
-                    {formatPlank(e.seconds)} דק׳
-                  </span>
+                  <span className={styles.logVals}>{formatPlank(e.seconds)}</span>
                   <button
                     type="button"
                     className={styles.logDelete}
