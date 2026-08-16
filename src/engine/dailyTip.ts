@@ -74,14 +74,21 @@ function hashDate(date: string): number {
 export async function getDailyTip(
   profileId: string,
   date: string,
+  /** true = מבוגר → טיפים מדעיים/תזונתיים; אחרת טיפים לילדים */
+  isAdult: boolean = false,
   // ברירת המחדל: אמצע היום של ה-date הלוגי, כדי ש-tipDate(shownAt)===date
   // תמיד יתקיים (יציבות "אותו יום → אותו טיפ") ללא תלות בשעון הקיר.
   now: number = dateToNoonTs(date),
 ): Promise<Tip | undefined> {
-  const [tips, history] = await Promise.all([
+  const [allTips, history] = await Promise.all([
     db.tips.toArray(),
     db.tipHistory.where('profileId').equals(profileId).sortBy('shownAt'),
   ]);
+
+  // סינון לפי קהל היעד: מבוגר מקבל רק טיפים למבוגר; ילד מקבל את השאר.
+  const tips = allTips.filter((t) =>
+    isAdult ? t.audience === 'adult' : t.audience !== 'adult',
+  );
 
   const tip = selectDailyTip(date, tips, history);
   if (!tip) return undefined;

@@ -174,6 +174,46 @@
   min-width: 28px;
 }
 
+.addMeasureBtn {
+  width: 100%;
+  min-height: 44px;
+  margin-top: var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--blue-light);
+  color: var(--blue);
+  font-weight: var(--fw-bold);
+}
+
+.logList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.logRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+}
+
+.logDate {
+  font-weight: var(--fw-medium);
+  color: var(--text-soft);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.logVals {
+  color: var(--text);
+  font-size: 14px;
+  text-align: start;
+}
+
 /* ===== אלרגיות ===== */
 .allergyInputRow {
   display: flex;

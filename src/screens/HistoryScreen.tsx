@@ -79,7 +79,7 @@ export function HistoryScreen() {
     let cancelled = false;
     const weekStart = startOfWeek(today);
     void Promise.all([
-      computeStreak(profile.id, today),
+      computeStreak(profile.id, today, profile.isAdult),
       getMostEatenThisWeek(profile.id, weekStart),
       getWeeklyGroupVariety(profile.id, weekStart),
     ]).then(([s, m, v]) => {

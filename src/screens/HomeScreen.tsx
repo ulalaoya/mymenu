@@ -15,7 +15,7 @@ import {
   setSlotTime,
   addCustomSlot,
   removeCustomSlot,
-  WATER_GOAL_CUPS,
+  waterGoalFor,
 } from '../db/menuService';
 import { getDailyTip } from '../engine';
 import type { FoodItem, Tip } from '../types';
@@ -109,10 +109,14 @@ export function HomeScreen() {
       [profile?.id, date],
     ) ?? 0;
 
+  // יעד המים לפי סוג הפרופיל (מבוגר=10, ילד=8)
+  const isAdult = profile?.isAdult ?? false;
+  const waterGoal = waterGoalFor(isAdult);
+
   const [tip, setTip] = useState<Tip | undefined>();
   useEffect(() => {
-    if (profile) void getDailyTip(profile.id, date).then(setTip);
-  }, [profile?.id, date]);
+    if (profile) void getDailyTip(profile.id, date, profile.isAdult).then(setTip);
+  }, [profile?.id, date, isAdult]);
 
   const foodsById = useMemo(() => {
     const m = new Map<string, FoodItem>();
@@ -157,7 +161,7 @@ export function HomeScreen() {
   async function handleWaterCup(target: number) {
     if (!profile) return;
     const next = waterCups === target ? target - 1 : target;
-    await setWaterCups(profile.id, date, next);
+    await setWaterCups(profile.id, date, next, waterGoal);
   }
 
   async function confirmReset() {
@@ -302,7 +306,7 @@ export function HomeScreen() {
           <h2>מים היום</h2>
         </div>
         <div className={styles.waterRow}>
-          {Array.from({ length: WATER_GOAL_CUPS }, (_, i) => {
+          {Array.from({ length: waterGoal }, (_, i) => {
             const cupNum = i + 1;
             const filled = cupNum <= waterCups;
             return (
@@ -320,9 +324,11 @@ export function HomeScreen() {
           })}
         </div>
         <p className={styles.waterHint}>
-          {waterCups >= WATER_GOAL_CUPS
-            ? 'ואו! שתית מלא מים היום 💙'
-            : `${waterCups} מתוך ${WATER_GOAL_CUPS} כוסות — ממשיכים!`}
+          {waterCups >= waterGoal
+            ? isAdult
+              ? `יעד המים הושלם — ${waterGoal} כוסות (≈2.5 ליטר) 💙`
+              : 'ואו! שתית מלא מים היום 💙'
+            : `${waterCups} מתוך ${waterGoal} כוסות — ממשיכים!`}
         </p>
       </section>
 
@@ -343,12 +349,16 @@ export function HomeScreen() {
       <section className="card">
         <div className={styles.cardTitle}>
           <Sparkle size={22} />
-          <h2>הצבעים של היום</h2>
+          <h2>{isAdult ? 'אבני הבניין התזונתיות של היום' : 'הצבעים של היום'}</h2>
         </div>
         <p className={styles.groupsIntro}>
-          {coveredGroups.size >= 5
-            ? 'איזה יופי של גיוון! 🌈'
-            : 'כל קבוצה שנרשמת נצבעת — נסי לאסוף כמה שיותר!'}
+          {isAdult
+            ? coveredGroups.size >= 5
+              ? 'כיסית מגוון רחב של קבוצות מזון היום 👏'
+              : 'כל קבוצת מזון שנרשמת מסמנת רכיב תזונתי שכוסה — שאיפה לגיוון מלא.'
+            : coveredGroups.size >= 5
+              ? 'איזה יופי של גיוון! 🌈'
+              : 'כל קבוצה שנרשמת נצבעת — נסי לאסוף כמה שיותר!'}
         </p>
         <div className={styles.groups}>
           {ALL_FOOD_GROUPS.map((g) => {

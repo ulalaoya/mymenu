@@ -118,4 +118,13 @@ export async function seedIfEmpty(): Promise<void> {
     const { TIPS } = await import('../data/tips');
     await db.tips.bulkAdd(TIPS);
   }
+
+  // טיפים למבוגר נזרעים בנפרד — גם בהתקנות קיימות שכבר זרעו טיפים לילדים.
+  const adultTipsCount = await db.tips
+    .filter((t) => t.audience === 'adult')
+    .count();
+  if (adultTipsCount === 0) {
+    const { ADULT_TIPS } = await import('../data/tips');
+    await db.tips.bulkAdd(ADULT_TIPS);
+  }
 }

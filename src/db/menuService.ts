@@ -37,8 +37,15 @@ export const SWEET_KEY: MealSlot = 'ממתק';
 /** שעת ברירת מחדל לממתק אם לא נקבעה */
 export const DEFAULT_SWEET_TIME = '16:30';
 
-/** יעד כוסות המים היומי (SPEC סעיף 4: 6–8 כוסות) */
+/** יעד כוסות המים היומי לילד/ברירת מחדל (SPEC סעיף 4) */
 export const WATER_GOAL_CUPS = 8;
+/** יעד כוסות המים למבוגר (≈2.5 ליטר) */
+export const ADULT_WATER_GOAL_CUPS = 10;
+
+/** יעד כוסות המים לפי סוג הפרופיל (מבוגר=10, ילד=8) */
+export function waterGoalFor(isAdult?: boolean): number {
+  return isAdult ? ADULT_WATER_GOAL_CUPS : WATER_GOAL_CUPS;
+}
 
 /**
  * חלון הטעינה (בימים) של תפריטים ורישומים לבניית תפריט.
@@ -305,13 +312,14 @@ export async function getWaterCups(
   return row?.cups ?? 0;
 }
 
-/** קובע את מספר כוסות המים ליום (נצמד לטווח 0..WATER_GOAL_CUPS) */
+/** קובע את מספר כוסות המים ליום (נצמד לטווח 0..goal) */
 export async function setWaterCups(
   profileId: string,
   date: string,
   cups: number,
+  goal: number = WATER_GOAL_CUPS,
 ): Promise<number> {
-  const clamped = Math.max(0, Math.min(WATER_GOAL_CUPS, Math.round(cups)));
+  const clamped = Math.max(0, Math.min(goal, Math.round(cups)));
   const row: WaterLog = {
     id: waterId(profileId, date),
     profileId,

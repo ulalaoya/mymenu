@@ -53,6 +53,20 @@ export interface ProfileMeasurements {
   belowNavel?: number;
 }
 
+/** רשומת מדידת היקפים מתוארכת (מעקב אחת לתקופה) */
+export interface MeasurementEntry extends ProfileMeasurements {
+  /** תאריך המדידה "YYYY-MM-DD" */
+  date: string;
+}
+
+/** רשומת מדידת פלאנק מתוארכת (משך בשניות) */
+export interface PlankEntry {
+  /** תאריך המדידה "YYYY-MM-DD" */
+  date: string;
+  /** משך הפלאנק בשניות (דקות×60 + שניות) */
+  seconds: number;
+}
+
 /** פרופיל משתמשת */
 export interface Profile {
   id: string;
@@ -67,8 +81,12 @@ export interface Profile {
   color: string;
   /** true = מעל גיל 18 (הורה); false/undefined = ילד/ה (מתחת ל-18) */
   isAdult?: boolean;
-  /** היקפי גוף בס"מ — נאספים רק לפרופיל מבוגר */
+  /** היקפי גוף בס"מ — נאספים רק לפרופיל מבוגר (ערך נוכחי; נשמר לתאימות) */
   measurements?: ProfileMeasurements;
+  /** יומן מדידות היקפים מתוארך (מבוגר) */
+  measurementLog?: MeasurementEntry[];
+  /** יומן מדידות פלאנק מתוארך (מבוגר) */
+  plankLog?: PlankEntry[];
   allergies: string[];
   vegetarian: boolean;
   /** שעות ארוחה מועדפות לפי משבצת (למשל { בוקר: "07:00" }) */
@@ -150,6 +168,8 @@ export interface Tip {
   id: string;
   text: string;
   category: string;
+  /** קהל היעד: 'adult' לטיפים מדעיים/תזונתיים למבוגר; אחרת (ברירת מחדל) ילד */
+  audience?: 'child' | 'adult';
 }
 
 /** היסטוריית טיפים שהוצגו לפרופיל */

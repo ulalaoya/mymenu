@@ -8,7 +8,12 @@ import { AVATARS, ADULT_AVATARS, PROFILE_COLORS } from '../db/constants';
 import { DEFAULT_MEAL_TIMES } from '../db/profiles';
 import { DAY_SLOTS, SLOT_LABELS } from '../utils/menuDisplay';
 import { todayString } from '../utils/date';
-import type { MealSlot, ProfileMeasurements } from '../types';
+import type {
+  MealSlot,
+  ProfileMeasurements,
+  MeasurementEntry,
+  PlankEntry,
+} from '../types';
 import {
   Journal,
   Clock,
@@ -29,6 +34,19 @@ const MEASUREMENT_FIELDS: { key: keyof ProfileMeasurements; label: string }[] = 
   { key: 'belowNavel', label: 'מתחת הטבור' },
 ];
 
+/** מציג תאריך YYYY-MM-DD כ-DD.MM.YYYY */
+function formatDate(d: string): string {
+  const [y, m, day] = d.split('-');
+  return `${day}.${m}.${y}`;
+}
+
+/** מציג משך פלאנק (שניות) כ-מ:שש */
+function formatPlank(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
 export function SettingsScreen() {
   const { profile, updateActiveProfile, logout } = useAuth();
   const navigate = useNavigate();
@@ -45,9 +63,13 @@ export function SettingsScreen() {
   );
   const [vegetarian, setVegetarian] = useState(profile?.vegetarian ?? false);
   const [newAllergy, setNewAllergy] = useState('');
-  const [measurements, setMeasurements] = useState<ProfileMeasurements>(
-    profile?.measurements ?? {},
-  );
+  // טיוטת מדידת היקפים חדשה + תאריך
+  const [measurements, setMeasurements] = useState<ProfileMeasurements>({});
+  const [measureDate, setMeasureDate] = useState(date);
+  // טיוטת מדידת פלאנק חדשה + תאריך
+  const [plankMin, setPlankMin] = useState('');
+  const [plankSec, setPlankSec] = useState('');
+  const [plankDate, setPlankDate] = useState(date);
 
   const [savedMsg, setSavedMsg] = useState('');
   const [error, setError] = useState('');
@@ -94,6 +116,53 @@ export function SettingsScreen() {
     });
   }
 
+  function flashSaved(msg: string) {
+    setSavedMsg(msg);
+    window.setTimeout(() => setSavedMsg(''), 3000);
+  }
+
+  /** מוסיף מדידת היקפים מתוארכת ליומן ושומר */
+  async function addMeasurement() {
+    if (!profile) return;
+    const hasAny =
+      measurements.navel != null ||
+      measurements.aboveNavel != null ||
+      measurements.belowNavel != null;
+    if (!hasAny) {
+      setError('צריך להזין לפחות היקף אחד');
+      return;
+    }
+    setError('');
+    const entry: MeasurementEntry = { date: measureDate, ...measurements };
+    const log = [...(profile.measurementLog ?? []), entry];
+    const updated = await updateProfile(profile.id, { measurementLog: log });
+    if (updated) {
+      updateActiveProfile(updated);
+      setMeasurements({});
+      flashSaved('המדידה נשמרה 💙');
+    }
+  }
+
+  /** מוסיף מדידת פלאנק מתוארכת ליומן ושומר */
+  async function addPlank() {
+    if (!profile) return;
+    const seconds = (Number(plankMin) || 0) * 60 + (Number(plankSec) || 0);
+    if (seconds <= 0) {
+      setError('צריך להזין משך גדול מאפס');
+      return;
+    }
+    setError('');
+    const entry: PlankEntry = { date: plankDate, seconds };
+    const log = [...(profile.plankLog ?? []), entry];
+    const updated = await updateProfile(profile.id, { plankLog: log });
+    if (updated) {
+      updateActiveProfile(updated);
+      setPlankMin('');
+      setPlankSec('');
+      flashSaved('מדידת הפלאנק נשמרה 💙');
+    }
+  }
+
   async function handleSave() {
     if (!profile) return;
     setError('');
@@ -108,7 +177,6 @@ export function SettingsScreen() {
         allergies,
         vegetarian,
         mealTimes,
-        measurements,
       });
       if (!updated) {
         setError('משהו השתבש, נסי שוב');
@@ -138,6 +206,14 @@ export function SettingsScreen() {
   }
 
   if (!profile) return null;
+
+  // יומני המדידות, החדשים קודם (לתצוגה)
+  const measurementLog = [...(profile.measurementLog ?? [])].sort((a, b) =>
+    b.date.localeCompare(a.date),
+  );
+  const plankLog = [...(profile.plankLog ?? [])].sort((a, b) =>
+    b.date.localeCompare(a.date),
+  );
 
   return (
     <div className={styles.wrap}>
@@ -286,13 +362,24 @@ export function SettingsScreen() {
         </label>
       </section>
 
-      {/* ===== היקפים (רק לפרופיל מבוגר) ===== */}
+      {/* ===== היקפים מתוארכים (רק לפרופיל מבוגר) ===== */}
       {profile.isAdult && (
         <section className="card">
           <div className={styles.sectionTitle}>
             <span aria-hidden="true">📏</span> <span>היקפים (ס״מ)</span>
           </div>
-          <p className={styles.hint}>מעקב אישי — היקפי גוף בסנטימטרים.</p>
+          <p className={styles.hint}>
+            מעקב אישי אחת לתקופה — בחרו תאריך והזינו היקפים.
+          </p>
+          <label className={styles.timeRow}>
+            <span className={styles.timeLabel}>תאריך המדידה</span>
+            <input
+              type="date"
+              className={styles.timeInput}
+              value={measureDate}
+              onChange={(e) => setMeasureDate(e.target.value)}
+            />
+          </label>
           <div className={styles.timesList}>
             {MEASUREMENT_FIELDS.map(({ key, label }) => (
               <label key={key} className={styles.timeRow}>
@@ -312,6 +399,100 @@ export function SettingsScreen() {
               </label>
             ))}
           </div>
+          <button
+            type="button"
+            className={styles.addMeasureBtn}
+            onClick={addMeasurement}
+          >
+            הוספת מדידה
+          </button>
+          {measurementLog.length > 0 && (
+            <div className={styles.logList}>
+              {measurementLog.map((e, i) => (
+                <div key={i} className={styles.logRow}>
+                  <span className={styles.logDate}>{formatDate(e.date)}</span>
+                  <span className={styles.logVals}>
+                    {[
+                      e.navel != null ? `טבור ${e.navel}` : null,
+                      e.aboveNavel != null ? `מעל ${e.aboveNavel}` : null,
+                      e.belowNavel != null ? `מתחת ${e.belowNavel}` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}{' '}
+                    ס״מ
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ===== פלאנק מתוארך (רק לפרופיל מבוגר) ===== */}
+      {profile.isAdult && (
+        <section className="card">
+          <div className={styles.sectionTitle}>
+            <span aria-hidden="true">🧘</span> <span>פלאנק</span>
+          </div>
+          <p className={styles.hint}>
+            מעקב אחת לתקופה — משך הפלאנק בדקות ושניות.
+          </p>
+          <label className={styles.timeRow}>
+            <span className={styles.timeLabel}>תאריך המדידה</span>
+            <input
+              type="date"
+              className={styles.timeInput}
+              value={plankDate}
+              onChange={(e) => setPlankDate(e.target.value)}
+            />
+          </label>
+          <label className={styles.timeRow}>
+            <span className={styles.timeLabel}>משך</span>
+            <span className={styles.measureField}>
+              <input
+                type="number"
+                inputMode="numeric"
+                min="0"
+                className={styles.measureInput}
+                value={plankMin}
+                onChange={(e) => setPlankMin(e.target.value)}
+                placeholder="0"
+                aria-label="דקות"
+              />
+              <span className={styles.measureUnit}>דק׳</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                min="0"
+                max="59"
+                className={styles.measureInput}
+                value={plankSec}
+                onChange={(e) => setPlankSec(e.target.value)}
+                placeholder="0"
+                aria-label="שניות"
+              />
+              <span className={styles.measureUnit}>שנ׳</span>
+            </span>
+          </label>
+          <button
+            type="button"
+            className={styles.addMeasureBtn}
+            onClick={addPlank}
+          >
+            הוספת מדידה
+          </button>
+          {plankLog.length > 0 && (
+            <div className={styles.logList}>
+              {plankLog.map((e, i) => (
+                <div key={i} className={styles.logRow}>
+                  <span className={styles.logDate}>{formatDate(e.date)}</span>
+                  <span className={styles.logVals}>
+                    {formatPlank(e.seconds)} דק׳
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       )}
 

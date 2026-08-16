@@ -87,12 +87,13 @@
   transition: transform 0.12s ease;
 }
 
-/* כוכבית "יום מעולה" בפינה העליונה בתוך התא (על שורת היום עצמו) */
+/* כוכבית "יום מעולה" — שורה מתחת למספר היום, במרכז התא */
 .dayStar {
   position: absolute;
-  top: 1px;
-  inset-inline-end: 2px;
-  font-size: 10px;
+  bottom: 1px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
   line-height: 1;
   pointer-events: none;
 }

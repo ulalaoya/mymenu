@@ -12,11 +12,11 @@ import type {
   SatietyRating,
   TasteRating,
 } from '../types';
-import { db } from './database';
+import { db, getProfile } from './database';
 import { getProfileFoods } from './foodRepo';
 import { markWinnerMenus } from '../engine';
 import { DAY_SLOTS, formatQuantity } from '../utils/menuDisplay';
-import { WATER_GOAL_CUPS } from './menuService';
+import { WATER_GOAL_CUPS, waterGoalFor } from './menuService';
 
 /** מספר המשבצות (ארוחות) ביום — לחישוב שלמות רישום (ללא הממתק) */
 export const MEALS_PER_DAY = DAY_SLOTS.length; // 5
@@ -44,20 +44,17 @@ export interface DayCell {
 
 /** מספר מנות הירק/פרי המינימלי ביום כדי שייחשב "יום מעולה" */
 export const EXCELLENT_PRODUCE_MIN = 4;
-/** כוסות המים הנדרשות ליום מעולה (יעד המים המלא) */
-export const EXCELLENT_WATER_MIN = WATER_GOAL_CUPS;
 
 /**
  * יום מעולה (כוכבית): נאכלו לפחות EXCELLENT_PRODUCE_MIN מנות של ירקות ו/או
- * פירות (בכל שילוב) ונשתו כל כוסות המים (EXCELLENT_WATER_MIN). חוויה חיובית.
+ * פירות (בכל שילוב) ונשתו כל כוסות המים (waterGoal — יעד המים המלא של הפרופיל).
  */
 export function isExcellentDay(
   produceServings: number,
   waterCups: number,
+  waterGoal: number = WATER_GOAL_CUPS,
 ): boolean {
-  return (
-    produceServings >= EXCELLENT_PRODUCE_MIN && waterCups >= EXCELLENT_WATER_MIN
-  );
+  return produceServings >= EXCELLENT_PRODUCE_MIN && waterCups >= waterGoal;
 }
 
 /** לוח שנה חודשי מלא */
@@ -74,10 +71,11 @@ export interface MonthCalendar {
 export function computeCompleteness(
   mealsLogged: number,
   waterCups: number,
+  waterGoal: number = WATER_GOAL_CUPS,
 ): 0 | 1 | 2 | 3 | 4 {
   if (mealsLogged === 0 && waterCups === 0) return 0;
   // בונוס מים: חצי היעד ומעלה נחשב "מים טובים"
-  const goodWater = waterCups >= Math.ceil(WATER_GOAL_CUPS / 2);
+  const goodWater = waterCups >= Math.ceil(waterGoal / 2);
   if (mealsLogged >= MEALS_PER_DAY && goodWater) return 4;
   if (mealsLogged >= MEALS_PER_DAY) return 3;
   if (mealsLogged >= 3) return 3;
@@ -106,7 +104,7 @@ export async function getMonthCalendar(
   const to = dateStr(year, month, daysInMonth);
   const startWeekday = new Date(year, month - 1, 1).getDay();
 
-  const [logs, waters, foods] = await Promise.all([
+  const [logs, waters, foods, profile] = await Promise.all([
     db.mealLogs
       .where('[profileId+date]')
       .between([profileId, from], [profileId, to], true, true)
@@ -116,8 +114,10 @@ export async function getMonthCalendar(
       .between([profileId, from], [profileId, to], true, true)
       .toArray(),
     getProfileFoods(profileId),
+    getProfile(profileId),
   ]);
 
+  const waterGoal = waterGoalFor(profile?.isAdult);
   const foodsById = new Map<string, FoodItem>();
   foods.forEach((f) => foodsById.set(f.id, f));
 
@@ -152,8 +152,8 @@ export async function getMonthCalendar(
       day: d,
       mealsLogged,
       waterCups,
-      completeness: computeCompleteness(mealsLogged, waterCups),
-      star: isExcellentDay(produceServings, waterCups),
+      completeness: computeCompleteness(mealsLogged, waterCups, waterGoal),
+      star: isExcellentDay(produceServings, waterCups, waterGoal),
     });
   }
 
@@ -255,11 +255,17 @@ function prevDate(date: string): string {
 export function computeStreakFromDates(
   loggedDates: Set<string>,
   today: string,
+  /**
+   * האם היום עצמו כבר "נסגר" ונספר ברצף. ברירת מחדל: קיים רישום כלשהו היום.
+   * למבוגר מעבירים כאן true רק לאחר שנרשמה ארוחת ערב (היום נספר רק בסופו).
+   */
+  todayQualifies?: boolean,
 ): number {
   let streak = 0;
   let cursor = today;
-  // אם היום עדיין ריק — לא שוברים; מתחילים מאתמול
-  if (!loggedDates.has(cursor)) {
+  const todayOk = todayQualifies ?? loggedDates.has(today);
+  // אם היום עדיין לא נספר — לא שוברים; מתחילים מאתמול (ימי עבר נספרים לפי רישום)
+  if (!todayOk) {
     cursor = prevDate(cursor);
   }
   while (loggedDates.has(cursor)) {
@@ -269,17 +275,27 @@ export function computeStreakFromDates(
   return streak;
 }
 
-/** רצף ימים רצופים עם רישום ארוחה, עד היום (wrapper ל-DB) */
+/**
+ * רצף ימים רצופים עם רישום ארוחה, עד היום (wrapper ל-DB).
+ * @param requireDinner למבוגר — היום הנוכחי נספר ברצף רק לאחר שנרשמה ארוחת ערב.
+ */
 export async function computeStreak(
   profileId: string,
   today: string,
+  requireDinner = false,
 ): Promise<number> {
   const logs = await db.mealLogs
     .where('profileId')
     .equals(profileId)
     .toArray();
   const dates = new Set(logs.map((l) => l.date));
-  return computeStreakFromDates(dates, today);
+  const todayHasDinner = logs.some(
+    (l) => l.date === today && l.slot === 'ערב',
+  );
+  const todayQualifies = requireDinner
+    ? dates.has(today) && todayHasDinner
+    : dates.has(today);
+  return computeStreakFromDates(dates, today, todayQualifies);
 }
 
 // ===== מאכלים חדשים שניסיתי =====

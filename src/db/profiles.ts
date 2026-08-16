@@ -112,6 +112,8 @@ export type ProfilePatch = Partial<
     | 'vegetarian'
     | 'mealTimes'
     | 'measurements'
+    | 'measurementLog'
+    | 'plankLog'
   >
 >;
 
