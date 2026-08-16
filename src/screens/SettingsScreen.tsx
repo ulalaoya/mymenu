@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { updateProfile } from '../db/profiles';
 import { reshuffleTodayMenu } from '../db/menuService';
-import { AVATARS, PROFILE_COLORS } from '../db/constants';
+import { AVATARS, ADULT_AVATARS, PROFILE_COLORS } from '../db/constants';
 import { DEFAULT_MEAL_TIMES } from '../db/profiles';
 import { DAY_SLOTS, SLOT_LABELS } from '../utils/menuDisplay';
 import { todayString } from '../utils/date';
@@ -165,7 +165,7 @@ export function SettingsScreen() {
 
         <span className={styles.label}>אווטאר</span>
         <div className={styles.avatarGrid}>
-          {AVATARS.map((a) => (
+          {(profile.isAdult ? ADULT_AVATARS : AVATARS).map((a) => (
             <button
               key={a}
               type="button"

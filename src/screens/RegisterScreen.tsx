@@ -2,7 +2,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { AVATARS, PROFILE_COLORS, RECOVERY_QUESTIONS } from '../db/constants';
+import {
+  AVATARS,
+  ADULT_AVATARS,
+  PROFILE_COLORS,
+  RECOVERY_QUESTIONS,
+} from '../db/constants';
 import { Sparkle } from '../components/icons';
 import styles from './RegisterScreen.module.css';
 
@@ -97,7 +102,10 @@ export function RegisterScreen() {
               className={
                 !isAdult ? `${styles.ageBtn} ${styles.ageActive}` : styles.ageBtn
               }
-              onClick={() => setIsAdult(false)}
+              onClick={() => {
+                setIsAdult(false);
+                setAvatar(AVATARS[0]);
+              }}
               aria-pressed={!isAdult}
             >
               ילד/ה
@@ -108,19 +116,22 @@ export function RegisterScreen() {
               className={
                 isAdult ? `${styles.ageBtn} ${styles.ageActive}` : styles.ageBtn
               }
-              onClick={() => setIsAdult(true)}
+              onClick={() => {
+                setIsAdult(true);
+                setAvatar(ADULT_AVATARS[0]);
+              }}
               aria-pressed={isAdult}
             >
-              הורה
+              מבוגר/ת
               <span className={styles.ageSub}>מעל 18</span>
             </button>
           </div>
         </fieldset>
 
         <fieldset className={styles.fieldset}>
-          <legend className={styles.label}>בחרי אווטאר</legend>
+          <legend className={styles.label}>בחירת אווטאר</legend>
           <div className={styles.avatarGrid}>
-            {AVATARS.map((a) => (
+            {(isAdult ? ADULT_AVATARS : AVATARS).map((a) => (
               <button
                 key={a}
                 type="button"
