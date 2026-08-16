@@ -43,6 +43,16 @@ export interface FoodItem {
   isCustom: boolean;
 }
 
+/** היקפי גוף בס"מ (רק לפרופיל מבוגר/הורה) */
+export interface ProfileMeasurements {
+  /** היקף טבור */
+  navel?: number;
+  /** מעל הטבור */
+  aboveNavel?: number;
+  /** מתחת הטבור */
+  belowNavel?: number;
+}
+
 /** פרופיל משתמשת */
 export interface Profile {
   id: string;
@@ -55,6 +65,10 @@ export interface Profile {
   recoverySalt?: string;
   avatar: string;
   color: string;
+  /** true = מעל גיל 18 (הורה); false/undefined = ילד/ה (מתחת ל-18) */
+  isAdult?: boolean;
+  /** היקפי גוף בס"מ — נאספים רק לפרופיל מבוגר */
+  measurements?: ProfileMeasurements;
   allergies: string[];
   vegetarian: boolean;
   /** שעות ארוחה מועדפות לפי משבצת (למשל { בוקר: "07:00" }) */

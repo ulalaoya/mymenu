@@ -33,6 +33,8 @@ export interface CreateProfileInput {
   recoveryA: string;
   avatar: string;
   color: string;
+  /** מעל גיל 18 (הורה) או לא (ילד/ה). ברירת מחדל: ילד/ה */
+  isAdult?: boolean;
 }
 
 /** מזהה ייחודי (crypto.randomUUID זמין בדפדפן וב-Node 24) */
@@ -83,6 +85,7 @@ export async function createProfile(
     recoverySalt,
     avatar: input.avatar,
     color: input.color,
+    isAdult: input.isAdult ?? false,
     allergies: [],
     vegetarian: false,
     mealTimes: { ...DEFAULT_MEAL_TIMES },
@@ -102,7 +105,13 @@ function normalizeAnswer(answer: string): string {
 export type ProfilePatch = Partial<
   Pick<
     Profile,
-    'username' | 'avatar' | 'color' | 'allergies' | 'vegetarian' | 'mealTimes'
+    | 'username'
+    | 'avatar'
+    | 'color'
+    | 'allergies'
+    | 'vegetarian'
+    | 'mealTimes'
+    | 'measurements'
   >
 >;
 

@@ -42,7 +42,6 @@ import {
   BUILTIN_UNIT_OPTIONS,
   DEFAULT_AMOUNT,
   DEFAULT_UNIT,
-  randomEncouragement,
 } from '../utils/menuDisplay';
 import { getCustomUnits, addCustomUnit } from '../utils/units';
 import { BottomSheet } from '../components/BottomSheet';
@@ -249,7 +248,7 @@ export function MealScreen() {
       plannedTime: slot.plannedTime,
       satietyRating: satiety === 0 ? undefined : satiety,
     });
-    setCelebrate(randomEncouragement());
+    setCelebrate('כל הכבוד על המעקב!');
     window.setTimeout(() => navigate('/'), 1400);
   }
 

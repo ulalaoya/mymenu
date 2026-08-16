@@ -94,6 +94,38 @@ select.input {
   background: var(--coral-light);
 }
 
+.ageRow {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.ageBtn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 56px;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border-soft);
+  background: var(--card);
+  color: var(--text);
+  font-weight: var(--fw-medium);
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.ageSub {
+  font-size: 12px;
+  color: var(--text-soft);
+  font-weight: var(--fw-regular);
+}
+
+.ageActive {
+  border-color: var(--blue);
+  background: var(--blue-light);
+}
+
 .colorRow {
   display: flex;
   gap: var(--space-4);

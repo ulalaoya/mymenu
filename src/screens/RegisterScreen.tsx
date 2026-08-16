@@ -16,6 +16,7 @@ export function RegisterScreen() {
   const [recoveryA, setRecoveryA] = useState('');
   const [avatar, setAvatar] = useState<string>(AVATARS[0]);
   const [color, setColor] = useState<string>(PROFILE_COLORS[0]);
+  const [isAdult, setIsAdult] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -45,6 +46,7 @@ export function RegisterScreen() {
         recoveryA,
         avatar,
         color,
+        isAdult,
       });
       navigate('/', { replace: true });
     } catch (err) {
@@ -86,6 +88,34 @@ export function RegisterScreen() {
             autoComplete="new-password"
           />
         </label>
+
+        <fieldset className={styles.fieldset}>
+          <legend className={styles.label}>מי הפרופיל הזה?</legend>
+          <div className={styles.ageRow}>
+            <button
+              type="button"
+              className={
+                !isAdult ? `${styles.ageBtn} ${styles.ageActive}` : styles.ageBtn
+              }
+              onClick={() => setIsAdult(false)}
+              aria-pressed={!isAdult}
+            >
+              ילד/ה
+              <span className={styles.ageSub}>מתחת ל-18</span>
+            </button>
+            <button
+              type="button"
+              className={
+                isAdult ? `${styles.ageBtn} ${styles.ageActive}` : styles.ageBtn
+              }
+              onClick={() => setIsAdult(true)}
+              aria-pressed={isAdult}
+            >
+              הורה
+              <span className={styles.ageSub}>מעל 18</span>
+            </button>
+          </div>
+        </fieldset>
 
         <fieldset className={styles.fieldset}>
           <legend className={styles.label}>בחרי אווטאר</legend>

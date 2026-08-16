@@ -8,7 +8,7 @@ import { AVATARS, PROFILE_COLORS } from '../db/constants';
 import { DEFAULT_MEAL_TIMES } from '../db/profiles';
 import { DAY_SLOTS, SLOT_LABELS } from '../utils/menuDisplay';
 import { todayString } from '../utils/date';
-import type { MealSlot } from '../types';
+import type { MealSlot, ProfileMeasurements } from '../types';
 import {
   Journal,
   Clock,
@@ -21,6 +21,13 @@ import styles from './SettingsScreen.module.css';
 
 /** צבע ההדגשה של הפרופיל (נקבע גלובלית לפי הצבע הנבחר בהגדרות) */
 const ACCENT = 'var(--accent, var(--blue))';
+
+/** שדות ההיקפים (בס"מ) — מוצגים רק לפרופיל מבוגר */
+const MEASUREMENT_FIELDS: { key: keyof ProfileMeasurements; label: string }[] = [
+  { key: 'navel', label: 'היקף טבור' },
+  { key: 'aboveNavel', label: 'מעל הטבור' },
+  { key: 'belowNavel', label: 'מתחת הטבור' },
+];
 
 export function SettingsScreen() {
   const { profile, updateActiveProfile, logout } = useAuth();
@@ -38,6 +45,9 @@ export function SettingsScreen() {
   );
   const [vegetarian, setVegetarian] = useState(profile?.vegetarian ?? false);
   const [newAllergy, setNewAllergy] = useState('');
+  const [measurements, setMeasurements] = useState<ProfileMeasurements>(
+    profile?.measurements ?? {},
+  );
 
   const [savedMsg, setSavedMsg] = useState('');
   const [error, setError] = useState('');
@@ -74,6 +84,16 @@ export function SettingsScreen() {
     setMealTimes((prev) => ({ ...prev, [slot]: value }));
   }
 
+  function setMeasure(key: keyof ProfileMeasurements, value: string) {
+    setMeasurements((prev) => {
+      const next = { ...prev };
+      const n = Number(value);
+      if (value.trim() === '' || Number.isNaN(n)) delete next[key];
+      else next[key] = n;
+      return next;
+    });
+  }
+
   async function handleSave() {
     if (!profile) return;
     setError('');
@@ -88,6 +108,7 @@ export function SettingsScreen() {
         allergies,
         vegetarian,
         mealTimes,
+        measurements,
       });
       if (!updated) {
         setError('משהו השתבש, נסי שוב');
@@ -264,6 +285,35 @@ export function SettingsScreen() {
           </button>
         </label>
       </section>
+
+      {/* ===== היקפים (רק לפרופיל מבוגר) ===== */}
+      {profile.isAdult && (
+        <section className="card">
+          <div className={styles.sectionTitle}>
+            <span aria-hidden="true">📏</span> <span>היקפים (ס״מ)</span>
+          </div>
+          <p className={styles.hint}>מעקב אישי — היקפי גוף בסנטימטרים.</p>
+          <div className={styles.timesList}>
+            {MEASUREMENT_FIELDS.map(({ key, label }) => (
+              <label key={key} className={styles.timeRow}>
+                <span className={styles.timeLabel}>{label}</span>
+                <span className={styles.measureField}>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min="0"
+                    className={styles.measureInput}
+                    value={measurements[key] ?? ''}
+                    onChange={(e) => setMeasure(key, e.target.value)}
+                    placeholder="0"
+                  />
+                  <span className={styles.measureUnit}>ס״מ</span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </section>
+      )}
 
       {savedMsg && (
         <p className={styles.savedMsg} role="status">
