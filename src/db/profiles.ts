@@ -23,6 +23,7 @@ export const DEFAULT_MEAL_TIMES: Partial<Record<MealSlot, string>> = {
   מנחה: '16:00',
   ערב: '19:00',
   ממתק: '16:30',
+  'נשנוש לילה': '21:00',
 };
 
 /** קלט ליצירת פרופיל חדש */

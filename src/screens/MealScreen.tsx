@@ -67,6 +67,7 @@ function toComputed(raw: Map<string, FoodStats>): Map<string, FoodStatsComputed>
 
 export function MealScreen() {
   const { profile } = useAuth();
+  const isAdult = profile?.isAdult ?? false;
   const navigate = useNavigate();
   const { key = '' } = useParams();
   const date = todayString();
@@ -437,31 +438,33 @@ export function MealScreen() {
         </button>
       </section>
 
-      {/* ===== דירוג שובע (המדד החשוב ביותר) ===== */}
-      <section className="card">
-        <h2 className={styles.sectionTitle}>כמה את שבעה?</h2>
-        <div className={styles.faces}>
-          {SATIETY_FACES.map((f) => (
-            <button
-              key={f.value}
-              type="button"
-              className={`${styles.faceBtn} ${
-                satiety === f.value ? styles.faceOn : ''
-              }`}
-              onClick={() => setSatiety(f.value)}
-              aria-label={f.label}
-              title={f.label}
-            >
-              <span className={styles.faceEmoji}>{f.emoji}</span>
-            </button>
-          ))}
-        </div>
-        {satiety !== 0 && (
-          <p className={styles.faceLabel}>
-            {SATIETY_FACES.find((f) => f.value === satiety)?.label}
-          </p>
-        )}
-      </section>
+      {/* ===== דירוג שובע (המדד החשוב ביותר) — לא מוצג למבוגר ===== */}
+      {!isAdult && (
+        <section className="card">
+          <h2 className={styles.sectionTitle}>כמה את שבעה?</h2>
+          <div className={styles.faces}>
+            {SATIETY_FACES.map((f) => (
+              <button
+                key={f.value}
+                type="button"
+                className={`${styles.faceBtn} ${
+                  satiety === f.value ? styles.faceOn : ''
+                }`}
+                onClick={() => setSatiety(f.value)}
+                aria-label={f.label}
+                title={f.label}
+              >
+                <span className={styles.faceEmoji}>{f.emoji}</span>
+              </button>
+            ))}
+          </div>
+          {satiety !== 0 && (
+            <p className={styles.faceLabel}>
+              {SATIETY_FACES.find((f) => f.value === satiety)?.label}
+            </p>
+          )}
+        </section>
+      )}
 
       <button
         type="button"
@@ -469,7 +472,7 @@ export function MealScreen() {
         onClick={handleSave}
         disabled={!canSave}
       >
-        {eaten ? 'עדכון הארוחה 💾' : 'אכלתי! 🎉'}
+        {eaten ? 'עדכון הארוחה 💾' : isAdult ? 'סיימתי 🎉' : 'אכלתי! 🎉'}
       </button>
       {eaten && (
         <button type="button" className={styles.unlogBtn} onClick={handleUnlog}>
@@ -483,28 +486,7 @@ export function MealScreen() {
         title={`הוספה ל${slot.label}`}
         onClose={() => setAddOpen(false)}
       >
-        {alternatives.length > 0 && (
-          <>
-            <div className={styles.sheetLabel}>
-              <Sparkle size={18} /> ההצעות שלנו
-            </div>
-            {alternatives.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                className={styles.sheetFood}
-                onClick={() => addFood(f.id)}
-              >
-                <span className={styles.foodEmoji}>
-                <FoodSymbol symbol={f.emoji} size={22} />
-              </span>
-                <span className={styles.foodName}>{f.name}</span>
-                <Add size={20} color="var(--blue)" />
-              </button>
-            ))}
-          </>
-        )}
-        <div className={styles.sheetLabel}>חיפוש חופשי</div>
+        {/* חיפוש תמיד בראש המגירה */}
         <input
           type="text"
           className={styles.searchInput}
@@ -535,6 +517,27 @@ export function MealScreen() {
               הוספת "{search.trim()}" כמאכל חדש
             </button>
           )}
+        {alternatives.length > 0 && (
+          <>
+            <div className={styles.sheetLabel}>
+              <Sparkle size={18} /> ההצעות שלנו
+            </div>
+            {alternatives.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                className={styles.sheetFood}
+                onClick={() => addFood(f.id)}
+              >
+                <span className={styles.foodEmoji}>
+                  <FoodSymbol symbol={f.emoji} size={22} />
+                </span>
+                <span className={styles.foodName}>{f.name}</span>
+                <Add size={20} color="var(--blue)" />
+              </button>
+            ))}
+          </>
+        )}
       </BottomSheet>
 
       {/* ===== הוספת מאכל חדש למאגר ===== */}

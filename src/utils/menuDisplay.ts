@@ -21,6 +21,14 @@ export const DAY_SLOTS: MealSlot[] = [
   'ערב',
 ];
 
+/** סדר המשבצות למבוגר — כולל "נשנוש לילה" קבוע בסוף היום */
+export const ADULT_DAY_SLOTS: MealSlot[] = [...DAY_SLOTS, 'נשנוש לילה'];
+
+/** סדר המשבצות הקבועות לפי סוג הפרופיל */
+export function daySlotsFor(isAdult?: boolean): MealSlot[] {
+  return isAdult ? ADULT_DAY_SLOTS : DAY_SLOTS;
+}
+
 /** שם ידידותי למשבצת ארוחה */
 export const SLOT_LABELS: Record<MealSlot, string> = {
   בוקר: 'ארוחת בוקר',
@@ -29,6 +37,7 @@ export const SLOT_LABELS: Record<MealSlot, string> = {
   מנחה: 'ארוחת מנחה',
   ערב: 'ארוחת ערב',
   ממתק: 'הממתק היומי',
+  'נשנוש לילה': 'נשנוש לילה',
 };
 
 /** אייקון מתאים לכל משבצת */
@@ -39,6 +48,7 @@ export const SLOT_ICONS: Record<MealSlot, ComponentType<IconProps>> = {
   מנחה: Snack,
   ערב: Dinner,
   ממתק: Sweets,
+  'נשנוש לילה': Snack,
 };
 
 /** צבע ידידותי לכל קבוצת מזון (לתגיות ולצ'קליסט) */

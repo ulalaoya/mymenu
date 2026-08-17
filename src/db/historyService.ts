@@ -227,10 +227,12 @@ export async function getDayDetails(
         mood: log.mood,
       };
     })
-    .sort((a, b) => {
-      const s = slotOrder(a.slot) - slotOrder(b.slot);
-      return s !== 0 ? s : a.eatenAt - b.eatenAt;
-    });
+    // מיון כרונולוגי לפי שעת האכילה בפועל; שובר-שוויון לפי סדר היום
+    .sort((a, b) =>
+      a.eatenAt !== b.eatenAt
+        ? a.eatenAt - b.eatenAt
+        : slotOrder(a.slot) - slotOrder(b.slot),
+    );
 
   return { date, meals, waterCups: water?.cups ?? 0 };
 }

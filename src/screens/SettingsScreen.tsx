@@ -6,7 +6,7 @@ import { updateProfile } from '../db/profiles';
 import { reshuffleTodayMenu } from '../db/menuService';
 import { AVATARS, ADULT_AVATARS, PROFILE_COLORS } from '../db/constants';
 import { DEFAULT_MEAL_TIMES } from '../db/profiles';
-import { DAY_SLOTS, SLOT_LABELS } from '../utils/menuDisplay';
+import { DAY_SLOTS, daySlotsFor, SLOT_LABELS } from '../utils/menuDisplay';
 import { todayString } from '../utils/date';
 import type {
   MealSlot,
@@ -308,7 +308,7 @@ export function SettingsScreen() {
           האפליקציה לומדת מתי את אוכלת, אבל את תמיד יכולה לקבוע בעצמך 😊
         </p>
         <div className={styles.timesList}>
-          {DAY_SLOTS.map((slot) => (
+          {daySlotsFor(profile.isAdult).map((slot) => (
             <label key={slot} className={styles.timeRow}>
               <span className={styles.timeLabel}>{SLOT_LABELS[slot]}</span>
               <input

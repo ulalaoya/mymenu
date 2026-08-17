@@ -196,7 +196,7 @@ export function HistoryScreen() {
                     : `${cell.day} — ${cell.mealsLogged} ארוחות`
                 }
               >
-                {cell.day}
+                <span className={styles.dayNum}>{cell.day}</span>
                 {cell.star && <span className={styles.dayStar}>⭐</span>}
               </button>
             ) : (

@@ -24,7 +24,7 @@ import {
   type FoodStatsComputed,
 } from '../engine';
 import {
-  DAY_SLOTS,
+  daySlotsFor,
   SLOT_LABELS,
   DEFAULT_AMOUNT,
   DEFAULT_UNIT,
@@ -143,10 +143,54 @@ export async function getOrCreateTodayMenu(
     .first();
   if (existing) return existing;
 
+  // מבוגר: ברירת המחדל ליום חדש היא שכפול היום הקודם (אנשים אוכלים דומה כל יום).
+  if (profile.isAdult) {
+    const prev = await latestMenuBefore(profile.id, date);
+    if (prev) {
+      const cloned = cloneMenuForDate(prev, date);
+      await db.menus.put(cloned);
+      return cloned;
+    }
+  }
+
   const input = await loadBuildInput(profile, date);
   const menu = buildDailyMenu(input);
   await db.menus.put(menu);
   return menu;
+}
+
+/** מחזיר את התפריט האחרון לפני תאריך נתון (המאוחר ביותר), או undefined */
+async function latestMenuBefore(
+  profileId: string,
+  date: string,
+): Promise<Menu | undefined> {
+  const menus = await db.menus
+    .where('[profileId+date]')
+    .between([profileId, ''], [profileId, date], true, false)
+    .toArray();
+  if (menus.length === 0) return undefined;
+  menus.sort((a, b) => b.date.localeCompare(a.date));
+  return menus[0];
+}
+
+/** משכפל תפריט לתאריך חדש: אותם מאכלים/כמויות/שעות, מזהה חדש, לא מנצח */
+function cloneMenuForDate(prev: Menu, date: string): Menu {
+  return {
+    id: newId(),
+    profileId: prev.profileId,
+    date,
+    slots: prev.slots.map((s) => ({
+      ...s,
+      foodIds: [...s.foodIds],
+      quantities: s.quantities ? { ...s.quantities } : undefined,
+      // לסלוט מותאם — מזהה חדש ליום החדש (הרישומים ביום החדש עדיין ריקים)
+      id: s.custom ? newId() : s.id,
+    })),
+    sweetFoodId: prev.sweetFoodId,
+    sweetQuantity: prev.sweetQuantity,
+    sweetTime: prev.sweetTime,
+    isWinner: false,
+  };
 }
 
 /** שולף תפריט לפי מזהה */
@@ -366,7 +410,7 @@ export function getDiarySlots(menu: Menu, profile: Profile): DiarySlot[] {
     else byFixed.set(s.slot, s);
   }
 
-  const fixed: DiarySlot[] = DAY_SLOTS.map((slot) => {
+  const fixed: DiarySlot[] = daySlotsFor(profile.isAdult).map((slot) => {
     const ms = byFixed.get(slot);
     return {
       key: slot,
@@ -374,7 +418,10 @@ export function getDiarySlots(menu: Menu, profile: Profile): DiarySlot[] {
       label: SLOT_LABELS[slot],
       foodIds: ms?.foodIds ?? [],
       quantities: normalizeQuantities(ms?.quantities),
-      plannedTime: ms?.plannedTime || profile.mealTimes[slot] || '',
+      plannedTime:
+        ms?.plannedTime ||
+        profile.mealTimes[slot] ||
+        (slot === 'נשנוש לילה' ? '21:00' : ''),
       custom: false,
       isSweet: false,
     };

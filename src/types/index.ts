@@ -7,7 +7,8 @@ export type MealSlot =
   | 'צהריים'
   | 'מנחה'
   | 'ערב'
-  | 'ממתק';
+  | 'ממתק'
+  | 'נשנוש לילה';
 
 /** קבוצות המזון (SPEC סעיף 4) */
 export type FoodGroup =
